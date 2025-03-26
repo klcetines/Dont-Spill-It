@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unirse a Sala</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        input { padding: 10px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        #game { display: none; }
+    </style>
+</head>
+<body>
+    <div id="join">
+        <h2>Ingresar código de sala</h2>
+        <input type="text" id="roomCode" placeholder="Ej: 1234">
+        <button id="joinBtn">Unirse</button>
+        <p id="status"></p>
+    </div>
+
+    <div id="game">
+        <h2>Sala: <span id="currentRoom"></span></h2>
+        <button id="throwBtn">Tirar Dado</button>
+        <p>Resultado: <span id="result"></span></p>
+    </div>
+
+    <script>
+        const ws = new WebSocket('ws://192.168.0.25:8080');
+        let currentRoom = '';
+
+        document.getElementById('joinBtn').addEventListener('click', () => {
+            const code = document.getElementById('roomCode').value;
+            if (code.length === 4) {
+                ws.send(`join ${code}`);
+            } 
+            else {
+                document.getElementById('status').textContent = 'El código debe tener 4 dígitos';
+            }
+        });
+
+        ws.onmessage = (e) => {
+            const msg = e.data;
+            
+            if (msg === 'join_success') {
+                currentRoom = document.getElementById('roomCode').value;
+                document.getElementById('join').style.display = 'none';
+                document.getElementById('game').style.display = 'block';
+                document.getElementById('currentRoom').textContent = currentRoom;
+            } 
+            else if (msg === 'join_fail') {
+                document.getElementById('status').textContent = 'Sala no encontrada';
+            }
+            else if (msg.startsWith('dice ')) {
+                document.getElementById('result').textContent = msg.split(' ')[1];
+            }
+        };
+
+        document.getElementById('throwBtn').addEventListener('click', () => {
+            if (currentRoom) {
+                ws.send('throw');
+            }
+        });
+    </script>
+</body>
+</html>
