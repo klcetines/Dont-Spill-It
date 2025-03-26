@@ -32,7 +32,7 @@ public class MainThreadDispatcher : MonoBehaviour
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<MainThreadDispatcher>();
+                _instance = FindFirstObjectByType<MainThreadDispatcher>();
                 if (_instance == null)
                 {
                     GameObject obj = new GameObject("MainThreadDispatcher");

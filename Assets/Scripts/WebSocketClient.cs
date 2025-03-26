@@ -4,17 +4,15 @@ using WebSocketSharp;
 public class WebSocketClient : MonoBehaviour
 {
     private WebSocket ws;
+    private string currentRoomCode;
+    
     public GameObject player;
 
     private Character currentCharacter;
 
     void Start()
     {
-        currentCharacter = player.GetComponent<Character>();
-        if (currentCharacter == null)
-        {
-            Debug.LogError("Error al obtener el componente Character");
-        }
+        DontDestroyOnLoad(gameObject);
 
         // Conectar al servidor WebSocket (cambia la URL si es necesario)
         ws = new WebSocket("ws://localhost:8080");
@@ -51,14 +49,37 @@ public class WebSocketClient : MonoBehaviour
     void ProcesarMensaje(string mensaje)
     {
         Debug.Log("Procesando mensaje: " + mensaje);
-
         try
-        {
-            if (mensaje == "throw")
+        {       
+            if (mensaje.StartsWith("join "))
             {
-                int nDice = ThrowPlayerDice();
-                EnviarMensaje("dice " + nDice);
-                MovePlayer(nDice);
+                string code = mensaje.Substring(5);
+                MainThreadDispatcher.ExecuteOnMainThread(() =>
+                {
+                    bool joined = RoomManager.Instance.JoinRoom(code, this);
+                    if (joined)
+                    {
+                        EnviarMensaje("join_success");
+                        Debug.Log($"Cliente unido a sala {code}");
+                    }
+                    else
+                    {
+                        EnviarMensaje("join_fail");
+                    }
+                });
+            }
+            else if (mensaje == "get_code")
+            {
+                EnviarMensaje($"room_code {RoomManager.Instance.currentRoomCode}");
+            }
+            else if (mensaje == "throw" && !string.IsNullOrEmpty(currentRoomCode))
+            {
+                MainThreadDispatcher.ExecuteOnMainThread(() =>
+                {
+                    int nDice = ThrowPlayerDice();
+                    EnviarMensaje($"dice {nDice}");
+                    MovePlayer(nDice);
+                });
             }
         }
         catch (System.Exception ex)
