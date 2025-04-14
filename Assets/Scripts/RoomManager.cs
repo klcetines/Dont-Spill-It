@@ -4,14 +4,18 @@ using TMPro;
 
 public class RoomManager : MonoBehaviour
 {
-    private const int MAX_PLAYERS_PER_ROOM = 6; 
+    private const int MAX_PLAYERS_PER_ROOM = 6;
 
     public static RoomManager Instance;
-    public Dictionary<string, List<WebSocketClient>> activeRooms = new Dictionary<string, List<WebSocketClient>>();
     public string currentRoomCode;
     [SerializeField] private TextMeshProUGUI roomCodeText;
     [SerializeField] private GameObject imagePositions;
     [SerializeField] private GameObject playerImagePrefab;
+
+    private WebSocketManager WSManager;
+
+    // Almacena los clientes y sus representaciones visuales
+    private Dictionary<string, PlayerInfo> players = new Dictionary<string, PlayerInfo>();
 
     void Awake()
     {
@@ -19,7 +23,11 @@ public class RoomManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            GenerateRoomCode();
+            WSManager = FindFirstObjectByType<WebSocketManager>();
+            if(WSManager == null){
+                Debug.LogError("WebSocketManager not found from RoomManager");
+            }
+            GetRoomCode(WSManager);
         }
         else
         {
@@ -27,45 +35,101 @@ public class RoomManager : MonoBehaviour
         }
     }
 
-    public void GenerateRoomCode()
+    public class PlayerInfo
     {
-        currentRoomCode = Random.Range(1000, 9999).ToString(); // Código de 4 dígitos
-        Debug.Log($"Código de sala generado: {currentRoomCode}");
+        public WebSocketClient client;
+        public GameObject visualRepresentation;
+    }
+
+    public void GetRoomCode(WebSocketManager WSManager)
+    {
+        string currentRoomCode = WSManager.RoomCode;
         roomCodeText.text = currentRoomCode;
-        activeRooms.Add(currentRoomCode, new List<WebSocketClient>());
+        Debug.Log($"Código de sala generado: {currentRoomCode}");
     }
 
-    public bool JoinRoom(string code, WebSocketClient client)
+    public bool RegisterPlayer(string playerName, WebSocketClient client)
     {
-        if (activeRooms.ContainsKey(code) && activeRooms[code].Count < MAX_PLAYERS_PER_ROOM)
+        if (players.Count >= MAX_PLAYERS_PER_ROOM)
         {
-            activeRooms[code].Add(client);
-            int peopleJoined = activeRooms[currentRoomCode].Count;
-            if ((peopleJoined - 1) < imagePositions.transform.childCount)
-            {
-                Transform targetPosition = imagePositions.transform.GetChild(peopleJoined - 1);
-                InstantiatePlayerImage(targetPosition.position);
-            }
-            else
-            {
-                Debug.LogWarning("Not enough child positions available for the player image.");
-            }
-
-            return true;
+            Debug.LogWarning("La sala está llena");
+            return false;
         }
-        return false;
+
+        if (players.ContainsKey(playerName))
+        {
+            Debug.LogWarning($"El jugador {playerName} ya existe");
+            return false;
+        }
+
+        // Crear entrada para el nuevo jugador
+        players.Add(playerName, new PlayerInfo {
+            client = client,
+            visualRepresentation = CreatePlayerVisual(playerName)
+        });
+
+        Debug.Log($"Jugador {playerName} registrado en la sala");
+        return true;
     }
 
-    public void InstantiatePlayerImage(Vector3 position)
+    private GameObject CreatePlayerVisual(string playerName)
     {
-        if (playerImagePrefab != null && imagePositions != null)
+        if (players.Count < imagePositions.transform.childCount)
         {
-            Instantiate(playerImagePrefab, position, Quaternion.identity, imagePositions.transform);
-            Debug.Log("Player image instantiated at position: " + position);
+            Transform targetPos = imagePositions.transform.GetChild(players.Count);
+            GameObject playerImage = Instantiate(playerImagePrefab, targetPos.position, Quaternion.identity, imagePositions.transform);
+            
+            TextMeshProUGUI nameText = playerImage.GetComponentInChildren<TextMeshProUGUI>();
+            if (nameText != null) nameText.text = playerName;
+            
+            return playerImage;
         }
-        else
+        return null;
+    }
+
+    public void RemovePlayer(string playerName)
+    {
+        if (players.TryGetValue(playerName, out PlayerInfo playerInfo))
         {
-            Debug.LogWarning("Player image prefab or image positions parent is not assigned.");
+            if (playerInfo.visualRepresentation != null)
+                Destroy(playerInfo.visualRepresentation);
+            
+            if (playerInfo.client != null)
+                Destroy(playerInfo.client.gameObject);
+            
+            players.Remove(playerName);
+            Debug.Log($"Jugador {playerName} eliminado de la sala");
         }
+    }
+
+    public List<string> GetPlayerNames()
+    {
+        return new List<string>(players.Keys);
+    }
+
+    public WebSocketClient GetPlayerClient(string playerName)
+    {
+        return players.TryGetValue(playerName, out PlayerInfo info) ? info.client : null;
+    }
+
+    public void BroadcastToAll(string message)
+    {
+        foreach (var player in players.Values)
+        {
+            if (player.client != null)
+                player.client.Send(message);
+        }
+    }
+
+    public void SendToPlayer(string playerName, string message)
+    {
+        if (players.TryGetValue(playerName, out PlayerInfo playerInfo) && playerInfo.client != null)
+        {
+            playerInfo.client.Send(message);
+        }
+    }
+    public List<string> GetRoomClients()
+    {
+        return new List<string>(players.Keys);
     }
 }

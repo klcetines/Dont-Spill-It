@@ -3,143 +3,49 @@ using WebSocketSharp;
 
 public class WebSocketClient : MonoBehaviour
 {
-    private WebSocket ws;
-    private string currentRoomCode;
+    private WebSocket _clientSocket;
+    public string PlayerName { get; private set; }
     
-    public GameObject player;
-
-    private Character currentCharacter;
-
-    void Start()
+    public void Initialize(string playerName, string roomCode)
     {
-        DontDestroyOnLoad(gameObject);
-
-        // Conectar al servidor WebSocket (cambia la URL si es necesario)
-        ws = new WebSocket("ws://localhost:8080");
-
-        // Evento cuando se abre la conexión
-        ws.OnOpen += (sender, e) =>
-        {
-            Debug.Log("Conectado al servidor WebSocket");
+        DontDestroyOnLoad(this);
+        PlayerName = playerName;
+        _clientSocket = new WebSocket($"ws://192.168.0.25:8080/client/{roomCode}/{playerName}");
+        
+        _clientSocket.OnMessage += (sender, e) => {
+            Debug.Log($"[{PlayerName}] Mensaje recibido: {e.Data}");
+            MainThreadDispatcher.ExecuteOnMainThread(() => {
+                ProcessMessage(e.Data);
+            });
+            
         };
-
-        // Evento cuando se recibe un mensaje
-        ws.OnMessage += (sender, e) =>
-        {
-            Debug.Log("Mensaje recibido en Unity: " + e.Data);
-            ProcesarMensaje(e.Data); // Procesar el mensaje recibido
-        };
-
-        // Evento cuando ocurre un error
-        ws.OnError += (sender, e) =>
-        {
-            Debug.LogError("Error en WebSocket: " + e.Message);
-        };
-
-        // Evento cuando se cierra la conexión
-        ws.OnClose += (sender, e) =>
-        {
-            Debug.Log("Desconectado del servidor WebSocket");
-        };
-
-        // Conectar al servidor
-        ws.Connect();
+        
+        _clientSocket.Connect();
     }
 
-    void ProcesarMensaje(string mensaje)
+    public void Send(string message)
     {
-        Debug.Log("Procesando mensaje: " + mensaje);
-        try
-        {       
-            if (mensaje.StartsWith("join "))
-            {
-                string code = mensaje.Substring(5);
-                MainThreadDispatcher.ExecuteOnMainThread(() =>
-                {
-                    bool joined = RoomManager.Instance.JoinRoom(code, this);
-                    if (joined)
-                    {
-                        EnviarMensaje("join_success");
-                        Debug.Log($"Cliente unido a sala {code}");
-                    }
-                    else
-                    {
-                        EnviarMensaje("join_fail");
-                    }
-                });
-            }
-            else if (mensaje == "get_code")
-            {
-                EnviarMensaje($"room_code {RoomManager.Instance.currentRoomCode}");
-            }
-            else if (mensaje == "throw" && !string.IsNullOrEmpty(currentRoomCode))
-            {
-                MainThreadDispatcher.ExecuteOnMainThread(() =>
-                {
-                    int nDice = ThrowPlayerDice();
-                    EnviarMensaje($"dice {nDice}");
-                    MovePlayer(nDice);
-                });
-            }
-        }
-        catch (System.Exception ex)
+        if (_clientSocket != null && _clientSocket.IsAlive)
         {
-            Debug.LogError("Excepción en ProcesarMensaje: " + ex.Message);
+            _clientSocket.Send(message);
+            Debug.Log($"[{PlayerName}] Mensaje enviado: {message}");
         }
     }
 
-    public int ThrowPlayerDice()
+    private void ProcessMessage(string message)
     {
-        Debug.Log("Recibido tirar Dado");
-
-        if (currentCharacter != null)
-        {
-            int nDice = currentCharacter.ThrowDice();
-            Debug.Log("Dado lanzado: " + nDice);
-            return nDice;
-        }
-        Debug.Log("Error al lanzar el dado: no se encontró el componente Character");
-        return -1;
-    }
-
-    private void MovePlayer(int nDice)
-    {
-        if (currentCharacter != null)
-        {
-            currentCharacter.MoveOnMapPath(nDice);
-        }
-        else
-        {
-            Debug.LogError("Error al mover el jugador: no se encontró el componente Character");
-        }
-    }
-
-    public void EnviarMensaje(string mensaje)
-    {
-        if (ws != null && ws.IsAlive)
-        {
-            try
-            {
-                ws.Send(mensaje);
-                Debug.Log("Mensaje enviado desde Unity: " + mensaje);
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError("Error al enviar mensaje: " + ex.Message);
-            }
-        }
-        else
-        {
-            Debug.LogError("Error al enviar mensaje: WebSocket no está conectado");
+        if(GameManager.Instance != null){
+            // Procesar mensajes entrantes para este cliente específico
+            GameManager.Instance.HandlePlayerAction(PlayerName, message);
         }
     }
 
     void OnDestroy()
     {
-        // Cerrar la conexión WebSocket al destruir el objeto
-        if (ws != null)
+        if (_clientSocket != null)
         {
-            ws.Close();
+            if (_clientSocket.IsAlive) _clientSocket.Close();
+            _clientSocket = null;
         }
     }
 }
