@@ -28,7 +28,6 @@ public class WebSocketClient : MonoBehaviour
         if (_clientSocket != null && _clientSocket.IsAlive)
         {
             _clientSocket.Send(message);
-            Debug.Log($"[{PlayerName}] Mensaje enviado: {message}");
         }
     }
 

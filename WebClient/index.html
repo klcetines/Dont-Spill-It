@@ -6,8 +6,15 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
         input { padding: 10px; font-size: 16px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 5px; }
+        #join { display: block; }
         #game { display: none; }
+        #voting { display: none; margin-top: 20px; }
+        #diceSection { display: none; margin-top: 20px; }
+        .vote-btn { background-color: #4CAF50; color: white; border: none; }
+        .vote-btn:hover { background-color: #45a049; }
+        #diceBtn { background-color: #2196F3; color: white; }
+        #diceResult { font-size: 24px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -23,20 +30,35 @@
 
     <div id="game">
         <h2>Sala: <span id="currentRoom"></span></h2>
-        <button id="throwBtn">Tirar Dado</button>
-        <p>Resultado: <span id="result"></span></p>
+        
+        <!-- Dice Game Section -->
+        <div id="diceSection">
+            <button id="diceBtn">Tirar Dado</button>
+            <p id="diceResult"></p>
+        </div>
+        
+        <!-- Voting Section -->
+        <div id="voting">
+            <h3>Vota por una opción:</h3>
+            <button id="voteA" class="vote-btn">Opción A</button>
+            <button id="voteB" class="vote-btn">Opción B</button>
+        </div>
+        
+        <p id="gameStatus"></p>
     </div>
 
     <script>
         let ws; 
         let currentRoom = '';
-    
+        let playerName = '';
+
         document.getElementById('joinBtn').addEventListener('click', () => {
             const code = document.getElementById('roomCode').value;
             const name = document.getElementById('playerName').value;
             
             if (code.length === 4 && name.length > 0) {
-                ws = new WebSocket(`ws://192.168.0.25:8080/client/${code}/${name}`);
+                playerName = name;
+                ws = new WebSocket(`ws://localhost:8080/client/${code}/${name}`);
                 
                 ws.onopen = () => {
                     ws.send("READY");
@@ -45,7 +67,7 @@
                 
                 ws.onmessage = (e) => {
                     const msg = e.data;
-                    
+                    console.log(msg);
                     if (msg === 'JOIN_SUCCESS') {
                         currentRoom = code;
                         document.getElementById('join').style.display = 'none';
@@ -56,8 +78,17 @@
                         document.getElementById('status').textContent = 'Sala no encontrada';
                         ws.close();
                     }
-                    else if (msg.startsWith('DICE|')) {
-                        document.getElementById('result').textContent = msg.split('|')[1];
+                    else if (msg === 'DICE_MOMENT') {
+                        console.log("DiceMomento");
+                        showDiceInterface();
+                    }
+                    else if (msg.startsWith('DICE_RESULT|')) {
+                        const diceValue = msg.split('|')[1];
+                        showDiceResult(diceValue);
+                    }
+                    else if (msg.startsWith('GAME_TYPE|')) {
+                        const gameID = msg.split('|')[1];
+                        showGameInterface(gameID);
                     }
                     else if (msg.startsWith('ERROR|')) {
                         document.getElementById('status').textContent = msg.split('|')[1];
@@ -73,12 +104,70 @@
                     code.length !== 4 ? 'El código debe tener 4 dígitos' : 'Ingresa un nombre válido';
             }
         });
-    
-        document.getElementById('throwBtn').addEventListener('click', () => {
-            if (currentRoom && ws && ws.readyState === WebSocket.OPEN) {
-                ws.send("THROW");
+
+        function showDiceInterface() {
+            // Hide voting interface
+            document.getElementById('voting').style.display = 'none';
+            // Show dice interface
+            document.getElementById('diceSection').style.display = 'block';
+            document.getElementById('diceResult').textContent = '';
+            
+            // Setup dice button
+            document.getElementById('diceBtn').onclick = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send("THROW_DICE");
+                    document.getElementById('diceBtn').disabled = true;
+                }
+            };
+        }
+
+        function showDiceResult(value) {
+            document.getElementById('diceResult').textContent = `Resultado: ${value}`;
+            // Hide the button after getting result
+            document.getElementById('diceBtn').style.display = 'none';
+            
+            // Optionally show the button again after some time
+            setTimeout(() => {
+                document.getElementById('diceBtn').style.display = 'inline-block';
+                document.getElementById('diceBtn').disabled = false;
+                document.getElementById('diceSection').style.display = 'none';
+            }, 3000);
+        }
+
+        function showGameInterface(gameID) {
+            // Hide dice interface
+            document.getElementById('diceSection').style.display = 'none';
+            
+            const votingDiv = document.getElementById('voting');
+            const gameStatus = document.getElementById('gameStatus');
+            
+            switch(gameID) {
+                case '1': // Voting game
+                    votingDiv.style.display = 'block';
+                    gameStatus.textContent = 'Vota por una opción';
+                    
+                    document.getElementById('voteA').onclick = () => {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(`VOTE|A`);
+                            gameStatus.textContent = 'Has votado por la Opción A';
+                            votingDiv.style.display = 'none';
+                        }
+                    };
+                    
+                    document.getElementById('voteB').onclick = () => {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(`VOTE|B`);
+                            gameStatus.textContent = 'Has votado por la Opción B';
+                            votingDiv.style.display = 'none';
+                        }
+                    };
+                    break;
+                    
+                default:
+                    gameStatus.textContent = `Juego ${gameID} iniciado`;
+                    votingDiv.style.display = 'none';
             }
-        });
+        }
     </script>
 </body>
 </html>

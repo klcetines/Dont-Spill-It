@@ -109,12 +109,8 @@ public class GameManager : MonoBehaviour
         _turnTimer = 0f;              // Reset the timer
         
         foreach (var playerName in RoomManager.Instance.GetPlayerNames())
-        {
-            string message = (playerName == _playerOrder[_currentPlayerIndex]) ? 
-                $"your_turn {turnTimeout}" : 
-                $"wait_turn {_playerOrder[_currentPlayerIndex]}";
-                
-            RoomManager.Instance.SendToPlayer(playerName, message);
+        {           
+            RoomManager.Instance.SendToPlayer(playerName, "YOUR_TURN|15");
         }
     }
 
@@ -162,7 +158,9 @@ public class GameManager : MonoBehaviour
     }
 
     private void EndTurn(){
-        // Pasar al siguiente jugador
+        if(_currentPlayerIndex == (_playerOrder.Count-1)){
+            BetweenRoundsQuickGame();
+        }
         _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.Count;
         StartPlayerTurn();
     }
@@ -186,4 +184,15 @@ public class GameManager : MonoBehaviour
     {
         return _playerOrder.Count > 0 ? _playerOrder[_currentPlayerIndex] : null;
     }
+
+    private void BetweenRoundsQuickGame(){
+        int MAX_QUICKGAMES = 5;
+        
+        int quickgameNumber = Random.Range(1, 0 + 1); // +1 Becaus the max is not inclusive
+        
+        Debug.Log($"Minigame decided: {quickgameNumber}");
+
+        _RoomManager.BroadcastToAll($"MINIGAMEID|{quickgameNumber}");
+    }
+
 }
