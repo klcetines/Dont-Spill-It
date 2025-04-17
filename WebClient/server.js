@@ -27,13 +27,6 @@ wss.on('connection', (ws, req) => {
         }
 
         const room = rooms.get(roomCode);
-        
-        // Verificar nombre único
-        /*if (room.clients.has(playerName)) {
-            ws.send("ERROR|Nombre ya en uso");
-            ws.close();
-            return;
-        }*/
 
         room.clients.set(playerName, ws);
         ws.send("JOIN_SUCCESS");
@@ -52,23 +45,27 @@ wss.on('connection', (ws, req) => {
             if (messageStr === "READY") return;
         
             try {
-                if (connectionType === 'host') {
-                    const [command, ...args] = messageStr.split('|');
-                    
-                    if (command === 'YOUR_TURN') {
-                        broadcastToClients(room, 'DICE_MOMENT');
-                    }
-                    else if (command === 'DICE_RESULT') {
-                        broadcastToClients(room, `DICE_RESULT|${args[0]}`);
-                    }
+                const splittedMsg = messageStr.split('|');
+
+                if (splittedMsg[0] === YOUR_TURN) {
+                    ws.send("ASDASDASD")
                 }
-                else if (connectionType === 'client') {
-                    const [command, ...args] = messageStr.split('|');
-                    
-                    if (command === 'THROW_DICE' && room.host?.readyState === WebSocket.OPEN) {
-                        room.host.send(`THROW_DICE|${playerName}`);
-                    }
+                else if (splittedMsg[0] === 'DICE_RESULT') {
+                    const result = splittedMsg[1];
+                    broadcastToClients(room, `DICE_RESULT|${result}`);
                 }
+                else if (splittedMsg[0] === QUICKGAMEID) {
+                    const gameID = splittedMsg[1];
+                    broadcastToClients(room, `GAME_TYPE|${gameID}`);
+                }
+
+                if (splittedMsg[0] === 'THROW_DICE' && room.host?.readyState === WebSocket.OPEN) {
+                    room.host.send(`THROW_DICE|${playerName}`);
+                }
+                else if (splittedMsg[0] === 'VOTE' && room.host?.readyState === WebSocket.OPEN) {
+                    room.host.send(`VOTE|${playerName}|${splittedMsg[1]}`);
+                }
+                
             } catch (e) {
                 console.error('Error procesando mensaje:', e);
             }

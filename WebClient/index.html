@@ -68,6 +68,7 @@
                 ws.onmessage = (e) => {
                     const msg = e.data;
                     console.log(msg);
+                    
                     if (msg === 'JOIN_SUCCESS') {
                         currentRoom = code;
                         document.getElementById('join').style.display = 'none';
