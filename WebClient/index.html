@@ -85,7 +85,11 @@
                         const time = msg.split('|')[1];
                         alert(`Es tu turno. Tienes ${time} segundos.`);
                         showDiceInterface();
-                    } 
+                    }
+                    else if (msg.startsWith('DICETHROWN')){
+                        const value = msg.split('|')[1];
+                        showDiceResult(value);
+                    }
                     else {
                         console.log('Mensaje no reconocido:', msg);
                     }

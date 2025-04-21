@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
     private bool _waitingForDiceThrow = false;
     private float _turnTimer = 0f;
     private bool _isGameActive = false;
+    private bool _isMiniGameActive = false;
 
     public static GameManager Instance { get; private set; }
 
@@ -115,7 +116,7 @@ public class GameManager : MonoBehaviour
 
     public void HandlePlayerAction(string playerName, string action)
     {
-        if (action == "throw" && IsPlayerTurn(playerName))
+        if (action == "THROW_DICE" && IsPlayerTurn(playerName))
         {
             if (_playersDictionary.TryGetValue(playerName, out GameObject player))
             {
@@ -148,19 +149,25 @@ public class GameManager : MonoBehaviour
         if (character != null)
         {
             character.MoveOnMapPath(diceValue, () => {
+                string currentPlayerName = _playerOrder[_currentPlayerIndex];
+                _RoomManager.SendToClient(currentPlayerName, $"DICETHROWN|{diceValue}");
                 EndTurn();
             });
         }
         
     }
 
-    private void EndTurn(){
-        if(_currentPlayerIndex == (_playerOrder.Count-1)){
-            BetweenRoundsQuickGame();
-        }
-        _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.Count;
-        StartPlayerTurn();
+    private void EndTurn()
+{
+    if (_currentPlayerIndex == (_playerOrder.Count - 1))
+    {
+        _isMiniGameActive = true;
+        BetweenRoundsQuickGame();
+        return;
     }
+    _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.Count;
+    StartPlayerTurn();
+}
 
     private void SkipTurn()
     {
@@ -190,6 +197,13 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Minigame decided: {quickgameNumber}");
 
         _RoomManager.BroadcastToAll($"MINIGAMEID|{quickgameNumber}");
+    }
+
+    public void OnMiniGameFinished()
+    {
+        _isMiniGameActive = false;
+        _currentPlayerIndex = 0; 
+        StartPlayerTurn();
     }
 
 }

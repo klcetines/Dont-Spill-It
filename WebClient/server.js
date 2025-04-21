@@ -44,12 +44,9 @@ wss.on('connection', (ws, req) => {
             }
 
             try {
-                const splittedMsg = messageStr.split('|');
-                if (splittedMsg[0] === 'TO_HOST') {
-                    // Mensaje del HTML para Unity
-                    if (room.host && room.host.readyState === WebSocket.OPEN) {
-                        room.host.send(messageStr);
-                    }
+                if (messageStr === 'THROW_DICE') {
+                    // Enviar al cliente-unity correspondiente
+                    sendToUnity(room, playerName, messageStr);
                 } else {
                     console.log('Mensaje no reconocido:', messageStr);
                 }
@@ -116,25 +113,20 @@ wss.on('connection', (ws, req) => {
     }
 });
 
-/*// --- PING SOLO A CLIENTES HTML ---
-setInterval(() => {
-    rooms.forEach((room, roomCode) => {
-        room.clients.forEach((client, playerName) => {
-            if (client.readyState === WebSocket.OPEN) {
-                // Solo clientes HTML reciben PING
-                client.send("PING");
-            } else {
-                room.clients.delete(playerName);
-            }
-        });
-    });
-}, 5000);*/
-
 // --- ENVÍO DE MENSAJES A CLIENTE HTML ---
 function sendToClient(room, playerName, message) {
     const client = room.clients.get(playerName);
     if (client && client.readyState === WebSocket.OPEN) {
         client.send(message);
+    } else {
+        console.log(`No se pudo enviar el mensaje a ${playerName}`);
+    }
+}
+
+function sendToUnity(room, playerName, message) {
+    const unityClient = room.clientsUnity.get(playerName);
+    if (unityClient && unityClient.readyState === WebSocket.OPEN) {
+        unityClient.send(message);
     } else {
         console.log(`No se pudo enviar el mensaje a ${playerName}`);
     }
