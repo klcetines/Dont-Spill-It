@@ -121,13 +121,15 @@ public class RoomManager : MonoBehaviour
         }
     }
 
-    public void SendToPlayer(string playerName, string message)
+    public void SendToClient(string playerName, string message) 
     {
-        if (players.TryGetValue(playerName, out PlayerInfo playerInfo) && playerInfo.client != null)
+        WebSocketClient client = GetPlayerClient(playerName);
+        if (client != null)
         {
-            playerInfo.client.Send(message);
-        }
+            client.Send($"TO_CLIENT|{playerName}|{message}");
+        }    
     }
+
     public List<string> GetRoomClients()
     {
         return new List<string>(players.Keys);

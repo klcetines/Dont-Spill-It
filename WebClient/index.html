@@ -58,41 +58,36 @@
             
             if (code.length === 4 && name.length > 0) {
                 playerName = name;
-                ws = new WebSocket(`ws://localhost:8080/client/${code}/${name}`);
+                ws = new WebSocket(`ws://192.168.0.25:8080/client/${code}/${name}`);
                 
                 ws.onopen = () => {
+                    console.log('Conexión WebSocket establecida');
                     ws.send("READY");
                     document.getElementById('status').textContent = "Conectando...";
                 };
                 
                 ws.onmessage = (e) => {
                     const msg = e.data;
-                    console.log(msg);
+                    console.log(`Mensaje recibido: ${msg}`);
                     
+                    if (msg === "PING") {
+                        console.log("Recibido PING del servidor, respondiendo con PONG");
+                        ws.send("PONG");
+                    }
+
                     if (msg === 'JOIN_SUCCESS') {
                         currentRoom = code;
                         document.getElementById('join').style.display = 'none';
                         document.getElementById('game').style.display = 'block';
                         document.getElementById('currentRoom').textContent = currentRoom;
-                    } 
-                    else if (msg === 'JOIN_FAIL') {
-                        document.getElementById('status').textContent = 'Sala no encontrada';
-                        ws.close();
                     }
-                    else if (msg === 'DICE_MOMENT') {
-                        console.log("DiceMomento");
+                    else if (msg.startsWith('YOURTURN|')) {
+                        const time = msg.split('|')[1];
+                        alert(`Es tu turno. Tienes ${time} segundos.`);
                         showDiceInterface();
-                    }
-                    else if (msg.startsWith('DICE_RESULT|')) {
-                        const diceValue = msg.split('|')[1];
-                        showDiceResult(diceValue);
-                    }
-                    else if (msg.startsWith('GAME_TYPE|')) {
-                        const gameID = msg.split('|')[1];
-                        showGameInterface(gameID);
-                    }
-                    else if (msg.startsWith('ERROR|')) {
-                        document.getElementById('status').textContent = msg.split('|')[1];
+                    } 
+                    else {
+                        console.log('Mensaje no reconocido:', msg);
                     }
                 };
                 

@@ -10,8 +10,8 @@ public class WebSocketClient : MonoBehaviour
     {
         DontDestroyOnLoad(this);
         PlayerName = playerName;
-        _clientSocket = new WebSocket($"ws://192.168.0.25:8080/client/{roomCode}/{playerName}");
-        
+        _clientSocket = new WebSocket($"ws://192.168.0.25:8080/client-unity/{roomCode}/{playerName}");    
+            
         _clientSocket.OnMessage += (sender, e) => {
             Debug.Log($"[{PlayerName}] Mensaje recibido: {e.Data}");
             MainThreadDispatcher.ExecuteOnMainThread(() => {

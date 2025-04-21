@@ -108,16 +108,13 @@ public class GameManager : MonoBehaviour
         _waitingForDiceThrow = true;  // Add this line
         _turnTimer = 0f;              // Reset the timer
         
-        foreach (var playerName in RoomManager.Instance.GetPlayerNames())
-        {           
-            RoomManager.Instance.SendToPlayer(playerName, "YOUR_TURN|15");
-        }
+        string currentPlayerName = _playerOrder[_currentPlayerIndex];
+
+        _RoomManager.SendToClient(currentPlayerName, "YOURTURN|15");
     }
 
     public void HandlePlayerAction(string playerName, string action)
     {
-        Debug.Log($"Acción recibida de {playerName}: {action}");
-        
         if (action == "throw" && IsPlayerTurn(playerName))
         {
             if (_playersDictionary.TryGetValue(playerName, out GameObject player))
