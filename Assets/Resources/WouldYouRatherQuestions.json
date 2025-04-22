@@ -1,0 +1,21 @@
+
+{
+    "questions": [
+        { "text": "¿Preferirías volar o ser invisible?", "optionA": "Volar", "optionB": "Ser invisible" },
+        { "text": "¿Preferirías nunca dormir o nunca comer?", "optionA": "Nunca dormir", "optionB": "Nunca comer" },
+        { "text": "¿Preferirías viajar al pasado o al futuro?", "optionA": "Pasado", "optionB": "Futuro" },
+        {"text" : "Prefieres tener...", "optionA" : "Pies gigantes (unos 67,4cm)", "optionB" : "Manos diminutas (como el diametro de una mandarina)"},
+        {"text" : "Prefieres tener...", "optionA" : "Un perro que habla", "optionB" : "Un gato que canta"},
+        {"text" : "Prefieres tener...", "optionA" : "Una casa en la playa", "optionB" : "Una casa en la montaña"},
+        {"text" : "Prefieres tener...", "optionA" : "Un coche volador", "optionB" : "Un coche que nunca se queda sin gasolina"},
+        {"text": "¿Preferirías comer solo pizza o solo hamburguesas por el resto de tu vida?", "optionA": "Pizza", "optionB": "Hamburguesas"},
+        {"text": "¿Preferirías vivir sin música o sin televisión?", "optionA": "Sin música", "optionB": "Sin televisión"},
+        {"text": "Hablar por siempre mas... ", "optionA": "Hablar por siempre mas como un pirata", "optionB": "Decir un 'BZZZT' despues de cada frase"},
+        {"text": "¿Preferirías ser un pez o un pájaro?", "optionA": "Pez", "optionB": "Pájaro" },
+        {"text": "¿Preferirías tener el poder de leer mentes o de volar?", "optionA": "Leer mentes", "optionB": "Volar" },
+        {"text": "¿Preferirías vivir en una casa en la playa o en una cabaña en las montañas?", "optionA": "Casa en la playa", "optionB": "Cabaña en las montañas" },
+        {"text": "Preferirias...", "optionA": "Defecar piñas", "optionB": "Orinar caldo hribiendo"},
+        {"text": "Preferirias...", "optionA": "Que las hormigas fueran capaces de usar bazookas", "optionB": "Que cuando mantengas relaciones sexuales una de las personas implicadas explotara"}
+
+    ]
+  }

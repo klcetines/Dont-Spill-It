@@ -45,9 +45,12 @@ wss.on('connection', (ws, req) => {
 
             try {
                 if (messageStr === 'THROW_DICE') {
-                    // Enviar al cliente-unity correspondiente
                     sendToUnity(room, playerName, messageStr);
-                } else {
+                }
+                else if (messageStr.startsWith('VOTE')) {
+                    sendToUnity(room, playerName, messageStr);
+                } 
+                else {
                     console.log('Mensaje no reconocido:', messageStr);
                 }
             } catch (e) {

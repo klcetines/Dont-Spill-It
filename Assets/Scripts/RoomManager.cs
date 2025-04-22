@@ -116,8 +116,7 @@ public class RoomManager : MonoBehaviour
     {
         foreach (var player in players.Values)
         {
-            if (player.client != null)
-                player.client.Send(message);
+            SendToClient(player.client.PlayerName, message);
         }
     }
 
@@ -126,7 +125,7 @@ public class RoomManager : MonoBehaviour
         WebSocketClient client = GetPlayerClient(playerName);
         if (client != null)
         {
-            client.Send($"TO_CLIENT|{playerName}|{message}");
+            client.Send($"{playerName}|{message}");
         }    
     }
 

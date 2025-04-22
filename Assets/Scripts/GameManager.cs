@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviour
 
     private RoomManager _RoomManager;
     private MainThreadDispatcher _MainThreadDispatcher;
-    private WebSocketClient _WebSocketClient;
     private MapPath _MapPath;
 
     private Dictionary<string, GameObject> _playersDictionary = new Dictionary<string, GameObject>();
@@ -40,10 +39,9 @@ public class GameManager : MonoBehaviour
     {
         _RoomManager = FindFirstObjectByType<RoomManager>();
         _MainThreadDispatcher = FindFirstObjectByType<MainThreadDispatcher>();
-        _WebSocketClient = FindFirstObjectByType<WebSocketClient>();
         _MapPath = FindFirstObjectByType<MapPath>();
 
-        if (_RoomManager == null || _MainThreadDispatcher == null || _WebSocketClient == null || _MapPath == null)
+        if (_RoomManager == null || _MainThreadDispatcher == null || _MapPath == null)
         {
             Debug.LogError("One or more required components are missing.");
             return;
@@ -84,7 +82,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void InstantiatePlayerAtStart(string playerName){
+    private void InstantiatePlayerAtStart(string playerName)
+    {
         PathNode startNode = _MapPath.GetFirstNode();
         if (startNode != null)
         {
@@ -158,16 +157,17 @@ public class GameManager : MonoBehaviour
     }
 
     private void EndTurn()
-{
-    if (_currentPlayerIndex == (_playerOrder.Count - 1))
     {
-        _isMiniGameActive = true;
-        BetweenRoundsQuickGame();
-        return;
+        if (_currentPlayerIndex == (_playerOrder.Count - 1))
+        {
+            _isMiniGameActive = true;
+            BetweenRoundsQuickGame();
+        }
+        else{
+            _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.Count;
+            StartPlayerTurn();
+        }
     }
-    _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.Count;
-    StartPlayerTurn();
-}
 
     private void SkipTurn()
     {
@@ -189,7 +189,8 @@ public class GameManager : MonoBehaviour
         return _playerOrder.Count > 0 ? _playerOrder[_currentPlayerIndex] : null;
     }
 
-    private void BetweenRoundsQuickGame(){
+    private void BetweenRoundsQuickGame()
+    {
         int MAX_QUICKGAMES = 5;
         
         int quickgameNumber = Random.Range(1, 0 + 1); // +1 Becaus the max is not inclusive
@@ -197,12 +198,41 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Minigame decided: {quickgameNumber}");
 
         _RoomManager.BroadcastToAll($"MINIGAMEID|{quickgameNumber}");
+        MiniGamesManager.Instance.StartMiniGame(quickgameNumber, _playerOrder);
     }
 
     public void OnMiniGameFinished()
     {
         _isMiniGameActive = false;
         _currentPlayerIndex = 0; 
+        StartPlayerTurn();
+    }
+
+    public void OnMiniGameCompleted(List<string> teamA, List<string> teamB)
+    {
+        Debug.Log($"Minijuego completado. Team A: {string.Join(", ", teamA)}, Team B: {string.Join(", ", teamB)}");
+        _playerOrder.Clear();
+        if(teamA.Count == 0 || teamB.Count == 0)
+        {
+            //TO DO: FER ALGO JA QUE VAN TOTS AL UNÍSONO
+        }
+        else if (teamA.Count > teamB.Count)
+        {
+            _playerOrder.AddRange(teamA);
+            _playerOrder.AddRange(teamB);
+        }
+        else if (teamB.Count > teamA.Count)
+        {
+            _playerOrder.AddRange(teamB);
+            _playerOrder.AddRange(teamA);
+        }
+        else
+        {
+            //TO DO: FER ALGO SI EMPATEN
+        }
+
+        _isMiniGameActive = false;
+        _currentPlayerIndex = 0;
         StartPlayerTurn();
     }
 

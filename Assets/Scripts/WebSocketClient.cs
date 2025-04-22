@@ -27,16 +27,21 @@ public class WebSocketClient : MonoBehaviour
     {
         if (_clientSocket != null && _clientSocket.IsAlive)
         {
-            _clientSocket.Send(message);
+            _clientSocket.Send($"TO_CLIENT|{message}");
         }
     }
 
     private void ProcessMessage(string message)
     {
-        if(GameManager.Instance != null){
-            // Procesar mensajes entrantes para este cliente específico
+        if(string.IsNullOrEmpty(message) || MiniGamesManager.Instance == null || GameManager.Instance == null) return;
+        if (message.StartsWith("VOTE"))
+        {
+            MiniGamesManager.Instance.HandleVote(PlayerName, message);
+        }
+        else{
             GameManager.Instance.HandlePlayerAction(PlayerName, message);
         }
+        
     }
 
     void OnDestroy()

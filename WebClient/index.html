@@ -83,12 +83,25 @@
                     }
                     else if (msg.startsWith('YOURTURN|')) {
                         const time = msg.split('|')[1];
-                        alert(`Es tu turno. Tienes ${time} segundos.`);
                         showDiceInterface();
                     }
                     else if (msg.startsWith('DICETHROWN')){
                         const value = msg.split('|')[1];
                         showDiceResult(value);
+                    }
+                    else if(msg.startsWith('MINIGAMEID')) {
+                        console.log('Iniciando minijuego...');
+                        const gameID = msg.split('|')[1];
+                        showGameInterface(gameID);
+                    }
+                    else if (msg.startsWith('RECIEVED_VOTE')) {
+                        const vote = msg.split('|')[1];
+                        document.getElementById('gameStatus').textContent = `Has votado por: ${vote}`;
+                        hideVotingInterface();
+                    }
+                    else if (msg.startsWith('VOTE_RESULT')) {
+                        const result = msg.split('|')[1];
+                        document.getElementById('gameStatus').textContent = `Resultado de la votación: ${result}`;
                     }
                     else {
                         console.log('Mensaje no reconocido:', msg);
@@ -136,6 +149,7 @@
 
         function showGameInterface(gameID) {
             // Hide dice interface
+            console.log(`Juego ${gameID} iniciado`);
             document.getElementById('diceSection').style.display = 'none';
             
             const votingDiv = document.getElementById('voting');
@@ -149,16 +163,12 @@
                     document.getElementById('voteA').onclick = () => {
                         if (ws && ws.readyState === WebSocket.OPEN) {
                             ws.send(`VOTE|A`);
-                            gameStatus.textContent = 'Has votado por la Opción A';
-                            votingDiv.style.display = 'none';
                         }
                     };
                     
                     document.getElementById('voteB').onclick = () => {
                         if (ws && ws.readyState === WebSocket.OPEN) {
                             ws.send(`VOTE|B`);
-                            gameStatus.textContent = 'Has votado por la Opción B';
-                            votingDiv.style.display = 'none';
                         }
                     };
                     break;
@@ -168,6 +178,11 @@
                     votingDiv.style.display = 'none';
             }
         }
+
+        function hideVotingInterface() {
+            document.getElementById('voting').style.display = 'none';
+        }
+
     </script>
 </body>
 </html>
