@@ -3,8 +3,19 @@ using System.Collections.Generic;
 
 public class PathNode : MonoBehaviour
 {
+    public enum NodeType
+    {
+        [Tooltip("Node that gives resources")]
+        Giver,
+        [Tooltip("Node that drains resources")]
+        Drainer,
+        [Tooltip("Special node for resource collection")]
+        Well
+    }
+
     // Lista de nodos siguientes (para soportar bifurcaciones)
     public List<PathNode> nextNodes = new List<PathNode>();
+    [SerializeField] private NodeType nodeType;
 
     // Nodo anterior (opcional, útil para recorrer el camino en reversa)
     public PathNode previousNode;
@@ -45,4 +56,10 @@ public class PathNode : MonoBehaviour
             }
         }
     }
+
+    public NodeType GetNodeType()
+    {
+        return nodeType;
+    }
+
 }

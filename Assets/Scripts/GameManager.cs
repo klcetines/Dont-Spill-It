@@ -3,8 +3,15 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Game Objects")]
     [SerializeField] private GameObject characterPrefab;
+    [SerializeField] private GameObject PJ_HUD_Prefab;
+
+    [Header("Game Settings")]
     [SerializeField] private float turnTimeout = 15f;
+
+    [SerializeField] private PlayerHUDManager hudManager;
+
 
     private RoomManager _RoomManager;
     private MainThreadDispatcher _MainThreadDispatcher;
@@ -66,6 +73,7 @@ public class GameManager : MonoBehaviour
             InstantiatePlayerAtStart(name);
         }
 
+        hudManager.InitializePlayerHUDs(_playerOrder.Count);
         _isGameActive = true;
         StartPlayerTurn();
     }
@@ -105,11 +113,12 @@ public class GameManager : MonoBehaviour
 
     private void StartPlayerTurn()
     {
-        _waitingForDiceThrow = true;  // Add this line
-        _turnTimer = 0f;              // Reset the timer
+        _waitingForDiceThrow = true;
+        _turnTimer = 0f;
+        
+        hudManager.UpdateActivePlayer(_currentPlayerIndex);
         
         string currentPlayerName = _playerOrder[_currentPlayerIndex];
-
         _RoomManager.SendToClient(currentPlayerName, "YOURTURN|15");
     }
 
@@ -148,6 +157,7 @@ public class GameManager : MonoBehaviour
         if (character != null)
         {
             character.MoveOnMapPath(diceValue, () => {
+                character.PathNodeEffect();
                 string currentPlayerName = _playerOrder[_currentPlayerIndex];
                 _RoomManager.SendToClient(currentPlayerName, $"DICETHROWN|{diceValue}");
                 EndTurn();
@@ -214,7 +224,9 @@ public class GameManager : MonoBehaviour
         _playerOrder.Clear();
         if(teamA.Count == 0 || teamB.Count == 0)
         {
-            //TO DO: FER ALGO JA QUE VAN TOTS AL UNÍSONO
+            // TODO: FER ALGO SI VAN AL UNÍSONO
+            _playerOrder.AddRange(teamA);
+            _playerOrder.AddRange(teamB);
         }
         else if (teamA.Count > teamB.Count)
         {
@@ -229,8 +241,12 @@ public class GameManager : MonoBehaviour
         else
         {
             //TO DO: FER ALGO SI EMPATEN
+            _playerOrder.AddRange(teamA);
+            _playerOrder.AddRange(teamB);
         }
 
+        hudManager.UpdatePlayerOrder(_playerOrder);
+        
         _isMiniGameActive = false;
         _currentPlayerIndex = 0;
         StartPlayerTurn();

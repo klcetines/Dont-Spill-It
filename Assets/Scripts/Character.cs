@@ -15,6 +15,10 @@ public class Character : MonoBehaviour
     private bool _isMoving { get; set; } // Indica si el personaje está en movimiento
     private float moveSpeed = 5f;
 
+    // Add these to the Character class
+    private int resources = 0;
+
+
     public void SetPlayerName(string name)
     {
         _playerName = name;
@@ -120,5 +124,51 @@ public class Character : MonoBehaviour
         {
             _isMoving = false;
         }
+    }
+
+    public void PathNodeEffect(){
+        if(currentNode != null)
+        {
+            switch (currentNode.GetNodeType())
+            {
+                case PathNode.NodeType.Giver:
+                    Debug.Log("Giver Node Effect");
+                    AddResources(10);
+                    break;
+                case PathNode.NodeType.Drainer:
+                    Debug.Log("Drainer Node Effect");
+                    RemoveResources(5);
+                    break;
+                case PathNode.NodeType.Well:
+                    Debug.Log("Leave here your liquid Node Effect");
+                    DepositResources();
+                    break;
+                default:
+                    Debug.Log("Unknown Node Type");
+                    break;
+            }
+        }
+        else
+        {
+            Debug.LogError("Current Node is null, cannot apply effect.");
+        }
+    }
+
+    private void AddResources(int amount)
+    {
+        resources += amount;
+        Debug.Log($"Added {amount} resources. New total: {resources}");
+    }
+
+    private void RemoveResources(int amount)
+    {
+        resources = Mathf.Max(0, resources - amount);
+        Debug.Log($"Removed {amount} resources. New total: {resources}");
+    }
+
+    private void DepositResources()
+    {
+        Debug.Log($"Deposited {resources} resources at well");
+        resources = 0;
     }
 }

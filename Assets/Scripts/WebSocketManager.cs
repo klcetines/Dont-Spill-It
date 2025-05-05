@@ -27,7 +27,7 @@ public class WebSocketManager : MonoBehaviour
     private void InitializeMainConnection()
     {
         RoomCode = Random.Range(1000, 9999).ToString();
-        _mainSocket = new WebSocket($"ws://192.168.0.25:8080/host/{RoomCode}");
+        _mainSocket = new WebSocket($"ws://192.168.0.19:8080/host/{RoomCode}");
         
         _mainSocket.OnMessage += (sender, e) => {
             Debug.Log($"Mensaje recibido en Unity: {e.Data}");

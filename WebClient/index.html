@@ -58,7 +58,7 @@
             
             if (code.length === 4 && name.length > 0) {
                 playerName = name;
-                ws = new WebSocket(`ws://192.168.0.25:8080/client/${code}/${name}`);
+                ws = new WebSocket(`ws://192.168.0.19:8080/client/${code}/${name}`);
                 
                 ws.onopen = () => {
                     console.log('Conexión WebSocket establecida');

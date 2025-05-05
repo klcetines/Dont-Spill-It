@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 
@@ -128,8 +129,17 @@ public class MiniGamesManager : MonoBehaviour
 
         if (playerVotes.Count >= _currentPlayers.Count)
         {
-            FinishWouldYouRather();
+            StartCoroutine(FinishWouldYouRatherWithDelay(2f));
         }
+    }
+
+    private IEnumerator FinishWouldYouRatherWithDelay(float endGameDelay = 1f)
+    {
+        // Espera unos segundos para que los jugadores vean el resultado final
+        yield return new WaitForSeconds(endGameDelay);
+        
+        // Ahora ejecuta la lógica de finalización
+        FinishWouldYouRather();
     }
 
     private void FinishWouldYouRather()
@@ -144,9 +154,6 @@ public class MiniGamesManager : MonoBehaviour
             else if (vote.Value == "B")
                 teamB.Add(vote.Key);
         }
-
-        Debug.Log($"Equipo A: {string.Join(", ", teamA)}");
-        Debug.Log($"Equipo B: {string.Join(", ", teamB)}");
 
         // Limpia la UI
         foreach (Transform child in optionAContainer) Destroy(child.gameObject);

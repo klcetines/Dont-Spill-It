@@ -135,4 +135,4 @@ function sendToUnity(room, playerName, message) {
     }
 }
 
-console.log("Servidor WebSocket iniciado en ws://192.168.0.25:8080");
+console.log("Servidor WebSocket iniciado en ws://192.168.0.19:8080");
