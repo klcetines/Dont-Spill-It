@@ -15,6 +15,26 @@
         .vote-btn:hover { background-color: #45a049; }
         #diceBtn { background-color: #2196F3; color: white; }
         #diceResult { font-size: 24px; font-weight: bold; margin-top: 10px; }
+        .character-selection {
+            display: none;
+            margin: 20px;
+        }
+        .character-option {
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+            padding: 10px;
+            border: 2px solid #ccc;
+        }
+        .character-option.selected {
+            border-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+        .character-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -26,6 +46,21 @@
         <br><br>
         <button id="joinBtn">Unirse</button>
         <p id="status"></p>
+    </div>
+
+    <div id="characterSelect" class="character-selection">
+        <h2>Selecciona tu personaje</h2>
+        <div class="character-options">
+            <div class="character-option" data-character="klcetin">
+                <img src="/images/klcetin.png" alt="klcetin" class="character-image">
+                <p>KLCETIN</p>
+            </div>
+            <div class="character-option" data-character="discoboy">
+                <img src="/images/discoboy.png" alt="discoboy" class="character-image">
+                <p>DISCOBOY</p>
+            </div>
+        </div>
+        <button id="confirmCharacter" disabled>Confirmar Selección</button>
     </div>
 
     <div id="game">
@@ -78,6 +113,8 @@
                     if (msg === 'JOIN_SUCCESS') {
                         currentRoom = code;
                         document.getElementById('join').style.display = 'none';
+                        document.getElementById('characterSelect').style.display = 'block';
+                        document.getElementById('currentRoom').textContent = currentRoom;
                         document.getElementById('game').style.display = 'block';
                         document.getElementById('currentRoom').textContent = currentRoom;
                     }
@@ -103,6 +140,11 @@
                         const result = msg.split('|')[1];
                         document.getElementById('gameStatus').textContent = `Resultado de la votación: ${result}`;
                     }
+                    else if (msg === 'CHARACTER_CONFIRM') {
+                        // Una vez confirmado el personaje, mostrar el juego
+                        document.getElementById('characterSelect').style.display = 'none';
+                        document.getElementById('game').style.display = 'block';
+                    }
                     else {
                         console.log('Mensaje no reconocido:', msg);
                     }
@@ -115,6 +157,27 @@
             else {
                 document.getElementById('status').textContent = 
                     code.length !== 4 ? 'El código debe tener 4 dígitos' : 'Ingresa un nombre válido';
+            }
+        });
+
+        document.querySelectorAll('.character-option').forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove previous selection
+                document.querySelectorAll('.character-option').forEach(opt => 
+                    opt.classList.remove('selected'));
+                // Add selection to clicked option
+                option.classList.add('selected');
+                document.getElementById('confirmCharacter').disabled = false;
+            });
+        });
+
+        document.getElementById('confirmCharacter').addEventListener('click', () => {
+            const selectedCharacter = document.querySelector('.character-option.selected');
+            if (selectedCharacter) {
+                const character = selectedCharacter.dataset.character;
+                ws.send(`CHARACTER_SELECT|${character}`);
+                document.getElementById('characterSelect').style.display = 'none';
+                document.getElementById('game').style.display = 'block';
             }
         });
 

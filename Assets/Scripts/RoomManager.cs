@@ -87,6 +87,45 @@ public class RoomManager : MonoBehaviour
         return null;
     }
 
+    public void UpdatePlayerVisual(string playerName, string message)
+    {
+        var parts = message.Split('|');
+        if (parts.Length != 2) return;
+        int chracterID = int.Parse(parts[1]);
+        
+        if (players.TryGetValue(playerName, out PlayerInfo playerInfo))
+        {
+            if (playerInfo.visualRepresentation != null)
+                Destroy(playerInfo.visualRepresentation);
+            Sprite newSprite = null;
+            Debug.Log($"Actualizando visual del jugador {playerName} con ID {chracterID}");
+            switch (chracterID)
+            {
+                case 1:
+                    newSprite = Resources.Load<Sprite>("Sprites/PJ/KLCETIN/klcetin_0");
+                    break;
+                case 2:
+                    newSprite = Resources.Load<Sprite>("Sprites/PJ/DISCOBOY/discoboy_0");
+                    break;
+                default:
+                    Debug.LogWarning($"ID de personaje no reconocido: {chracterID}");
+                    break;
+            }
+
+            if (newSprite != null)
+            {
+                playerInfo.visualRepresentation = CreatePlayerVisual(playerName);
+                var spriteRenderer = playerInfo.visualRepresentation.GetComponentInChildren<SpriteRenderer>();
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.sprite = newSprite;
+                }
+            }
+
+            Debug.Log($"Visual del jugador {playerName} actualizada");
+        }
+    }
+    
     public void RemovePlayer(string playerName)
     {
         if (players.TryGetValue(playerName, out PlayerInfo playerInfo))

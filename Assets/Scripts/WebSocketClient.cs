@@ -38,6 +38,11 @@ public class WebSocketClient : MonoBehaviour
         {
             MiniGamesManager.Instance.HandleVote(PlayerName, message);
         }
+        else if (message.StartsWith("CHARACTER_SELECT"))
+        {
+            RoomManager.Instance.UpdatePlayerVisual(PlayerName, message);
+            Send($"CHARACTER_CONFIRM");
+        }
         else{
             GameManager.Instance.HandlePlayerAction(PlayerName, message);
         }

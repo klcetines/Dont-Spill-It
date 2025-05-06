@@ -43,6 +43,13 @@ wss.on('connection', (ws, req) => {
                 return;
             }
 
+            if (messageStr.startsWith('CHARACTER_SELECT')) {
+                const character = messageStr.split('|')[1];
+                // Enviar mensaje formateado a Unity
+                const unityMessage = `CHARACTER_SELECT|${playerName}|${character}`;
+                sendToUnity(room, playerName, unityMessage);
+            }
+
             try {
                 if (messageStr === 'THROW_DICE') {
                     sendToUnity(room, playerName, messageStr);
