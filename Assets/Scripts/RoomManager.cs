@@ -62,10 +62,10 @@ public class RoomManager : MonoBehaviour
             return false;
         }
 
-        // Crear entrada para el nuevo jugador
+        // Create empty PlayerInfo first
         players.Add(playerName, new PlayerInfo {
             client = client,
-            visualRepresentation = CreatePlayerVisual(playerName)
+            visualRepresentation = null  // Don't create visual yet
         });
 
         Debug.Log($"Jugador {playerName} registrado en la sala");
@@ -74,11 +74,19 @@ public class RoomManager : MonoBehaviour
 
     private GameObject CreatePlayerVisual(string playerName)
     {
-        if (players.Count < imagePositions.transform.childCount)
+        // First, clean up any existing visuals in the target position
+        int targetIndex = players.Count - 1;
+        if (targetIndex >= 0 && targetIndex < imagePositions.transform.childCount)
         {
-            Transform targetPos = imagePositions.transform.GetChild(players.Count);
-            GameObject playerImage = Instantiate(playerImagePrefab, targetPos.position, Quaternion.identity, imagePositions.transform);
-            
+            Transform targetPos = imagePositions.transform.GetChild(targetIndex);
+            // Remove any existing objects at this position
+            foreach (Transform child in targetPos)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // Create new visual
+            GameObject playerImage = Instantiate(playerImagePrefab, targetPos.position, Quaternion.identity, targetPos);
             TextMeshProUGUI nameText = playerImage.GetComponentInChildren<TextMeshProUGUI>();
             if (nameText != null) nameText.text = playerName;
             
@@ -90,39 +98,48 @@ public class RoomManager : MonoBehaviour
     public void UpdatePlayerVisual(string playerName, string message)
     {
         var parts = message.Split('|');
-        if (parts.Length != 2) return;
-        int chracterID = int.Parse(parts[1]);
-        
+        int characterID = int.Parse(parts[2]);
         if (players.TryGetValue(playerName, out PlayerInfo playerInfo))
         {
+            // First destroy the old visual if it exists
             if (playerInfo.visualRepresentation != null)
+            {
                 Destroy(playerInfo.visualRepresentation);
-            Sprite newSprite = null;
-            Debug.Log($"Actualizando visual del jugador {playerName} con ID {chracterID}");
-            switch (chracterID)
-            {
-                case 1:
-                    newSprite = Resources.Load<Sprite>("Sprites/PJ/KLCETIN/klcetin_0");
-                    break;
-                case 2:
-                    newSprite = Resources.Load<Sprite>("Sprites/PJ/DISCOBOY/discoboy_0");
-                    break;
-                default:
-                    Debug.LogWarning($"ID de personaje no reconocido: {chracterID}");
-                    break;
+                playerInfo.visualRepresentation = null;
             }
 
-            if (newSprite != null)
+            // Create new visual representation
+            playerInfo.visualRepresentation = CreatePlayerVisual(playerName);
+
+            if (playerInfo.visualRepresentation != null)
             {
-                playerInfo.visualRepresentation = CreatePlayerVisual(playerName);
-                var spriteRenderer = playerInfo.visualRepresentation.GetComponentInChildren<SpriteRenderer>();
-                if (spriteRenderer != null)
+                Sprite newSprite = null;
+                switch (characterID)
                 {
-                    spriteRenderer.sprite = newSprite;
+                    case 0:
+                        newSprite = Resources.Load<Sprite>("Sprites/PJ/KLCETIN/klcetin_0");
+                        break;
+                    case 1:
+                        newSprite = Resources.Load<Sprite>("Sprites/PJ/DISCOBOY/discoboy_standing");
+                        break;
+                    default:
+                        Debug.LogWarning($"ID de personaje no reconocido: {characterID}");
+                        break;
                 }
-            }
 
-            Debug.Log($"Visual del jugador {playerName} actualizada");
+                Debug.Log($"Sprite cargado: {newSprite}");
+                if (newSprite != null)
+                {
+                    Debug.Log($"Cargando sprite para el jugador {playerName} con ID {characterID}"); 
+                    var spriteRenderer = playerInfo.visualRepresentation.GetComponentInChildren<SpriteRenderer>();
+                    if (spriteRenderer != null)
+                    {
+                        spriteRenderer.sprite = newSprite;
+                    }
+                }
+
+                Debug.Log($"Visual del jugador {playerName} actualizada");
+            }
         }
     }
     

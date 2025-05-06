@@ -33,15 +33,15 @@ public class WebSocketClient : MonoBehaviour
 
     private void ProcessMessage(string message)
     {
-        if(string.IsNullOrEmpty(message) || MiniGamesManager.Instance == null || GameManager.Instance == null) return;
-        if (message.StartsWith("VOTE"))
-        {
-            MiniGamesManager.Instance.HandleVote(PlayerName, message);
-        }
-        else if (message.StartsWith("CHARACTER_SELECT"))
+        if (message.StartsWith("CHARACTER_SELECT"))
         {
             RoomManager.Instance.UpdatePlayerVisual(PlayerName, message);
             Send($"CHARACTER_CONFIRM");
+        }
+        else if(string.IsNullOrEmpty(message) || MiniGamesManager.Instance == null || GameManager.Instance == null) return;
+        else if (message.StartsWith("VOTE"))
+        {
+            MiniGamesManager.Instance.HandleVote(PlayerName, message);
         }
         else{
             GameManager.Instance.HandlePlayerAction(PlayerName, message);

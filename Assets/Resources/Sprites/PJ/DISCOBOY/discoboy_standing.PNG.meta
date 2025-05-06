@@ -1,22 +1,13 @@
 fileFormatVersion: 2
-guid: 71687ceed4a801e4da568aa9ed938529
+guid: 9d614aa8644154c43be0983c87e3d2e7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1743890900708328042
-    second: discoboy_0
+      213: -1374441595803226307
+    second: discoboy_standing_0
   - first:
-      213: 734002071518648519
-    second: discoboy_1
-  - first:
-      213: 1239937286335509102
-    second: discoboy_2
-  - first:
-      213: 43203214937054235
-    second: discoboy_3
-  - first:
-      213: -7404028865410628501
-    second: discoboy_4
+      213: 2683876846051454407
+    second: discoboy_standing_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -112,13 +103,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: discoboy_0
+      name: discoboy_standing_0
       rect:
         serializedVersion: 2
-        x: 1318
-        y: 1144
-        width: 516
-        height: 899
+        x: 6
+        y: 16
+        width: 517
+        height: 900
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -127,19 +118,19 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 69d7e3027747cc7e0800000000000000
-      internalID: -1743890900708328042
+      spriteID: d3fa0a596a00dece0800000000000000
+      internalID: -1374441595803226307
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: discoboy_1
+      name: discoboy_standing_1
       rect:
         serializedVersion: 2
-        x: 1447
-        y: 1964
-        width: 67
+        x: 326
+        y: 836
+        width: 68
         height: 77
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -149,74 +140,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7c81541cef2bf2a00800000000000000
-      internalID: 734002071518648519
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: discoboy_2
-      rect:
-        serializedVersion: 2
-        x: 1081
-        y: 187
-        width: 745
-        height: 768
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e623ac77464253110800000000000000
-      internalID: 1239937286335509102
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: discoboy_3
-      rect:
-        serializedVersion: 2
-        x: 1384
-        y: 900
-        width: 107
-        height: 54
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b1c5a77581d799000800000000000000
-      internalID: 43203214937054235
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: discoboy_4
-      rect:
-        serializedVersion: 2
-        x: 272
-        y: 279
-        width: 688
-        height: 617
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b640672a9fa9f3990800000000000000
-      internalID: -7404028865410628501
+      spriteID: 7cdeacd85cb0f3520800000000000000
+      internalID: 2683876846051454407
       vertices: []
       indices: 
       edges: []
@@ -225,7 +150,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 0cbdadd052eb2604d9bb388eddcee11b
+    spriteID: a6c8ca28816ffa049953a8c748933052
     internalID: 0
     vertices: []
     indices: 
@@ -235,11 +160,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      discoboy_0: -1743890900708328042
-      discoboy_1: 734002071518648519
-      discoboy_2: 1239937286335509102
-      discoboy_3: 43203214937054235
-      discoboy_4: -7404028865410628501
+      discoboy_standing_0: -1374441595803226307
+      discoboy_standing_1: 2683876846051454407
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
