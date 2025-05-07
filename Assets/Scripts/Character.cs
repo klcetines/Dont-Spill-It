@@ -8,15 +8,19 @@ public class Character : MonoBehaviour
     private PathNode currentNode;
     private string _playerName;
 
-    int diceResult = -1;
     bool diceUsed = false;
 
-    private Vector3 _targetPosition { get; set; } // Posición objetivo para el movimiento
-    private bool _isMoving { get; set; } // Indica si el personaje está en movimiento
-    private float moveSpeed = 5f;
+    private Vector3 _targetPosition { get; set; }
+    private bool _isMoving { get; set; }
+    private float moveSpeed = 2f;
 
-    // Add these to the Character class
     private int resources = 0;
+
+    private Animator _animator;
+    private Vector2 _velocity;
+    private static readonly string X_SPEED = "XSpeed";
+    private static readonly string Y_SPEED = "YSpeed";
+    private static readonly string STILL_TRIGGER = "Still";
 
 
     public void SetPlayerName(string name)
@@ -33,20 +37,23 @@ public class Character : MonoBehaviour
         _targetPosition = transform.position;
         _isMoving = false;
         currentNode = _mapPath.GetFirstNode();
+        _animator = GetComponent<Animator>();
+        
+        if (_animator == null)
+        {
+            Debug.LogError("Animator component not found on Character!");
+        }
     }
 
     void Update()
     {
-        if (diceUsed)
-        {
-            diceResult = UnityEngine.Random.Range(1, 7);
-            diceUsed = false;
-        }
-
         // Mover al personaje si está en movimiento
         if (_isMoving)
         {
             MoveTowardsTarget();
+        }
+        else{
+            _animator.SetTrigger(STILL_TRIGGER);
         }
     }
 
@@ -116,13 +123,31 @@ public class Character : MonoBehaviour
 
     private void MoveTowardsTarget()
     {
-        // Mover al personaje hacia la posición objetivo
+        Vector3 previousPosition = transform.position;
         transform.position = Vector3.MoveTowards(transform.position, _targetPosition, moveSpeed * Time.deltaTime);
 
-        // Si el personaje llega a la posición objetivo, detener el movimiento
+        // Calculate velocity
+        Vector3 movement = (transform.position - previousPosition) / Time.deltaTime;
+        _velocity = new Vector2(movement.x, movement.y);
+
+        // Update animator parameters
+        if (_animator != null)
+        {
+            _animator.SetFloat(X_SPEED, _velocity.x);
+            _animator.SetFloat(Y_SPEED, _velocity.y);
+        }
+
+        // Check if we reached the target
         if (Vector3.Distance(transform.position, _targetPosition) < 0.1f)
         {
             _isMoving = false;
+            // Reset animator parameters when stopping
+            if (_animator != null)
+            {
+                _animator.SetFloat(X_SPEED, 0f);
+                _animator.SetFloat(Y_SPEED, 0f);
+                _animator.SetTrigger(STILL_TRIGGER);
+            }
         }
     }
 

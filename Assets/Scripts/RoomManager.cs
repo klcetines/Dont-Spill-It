@@ -4,6 +4,13 @@ using TMPro;
 
 public class RoomManager : MonoBehaviour
 {
+    public class PlayerInfo
+    {
+        public WebSocketClient client;
+        public GameObject visualRepresentation;
+        public int characterId = 0;
+    }
+
     private const int MAX_PLAYERS_PER_ROOM = 6;
 
     public static RoomManager Instance;
@@ -33,12 +40,6 @@ public class RoomManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
-
-    public class PlayerInfo
-    {
-        public WebSocketClient client;
-        public GameObject visualRepresentation;
     }
 
     public void GetRoomCode(WebSocketManager WSManager)
@@ -101,6 +102,7 @@ public class RoomManager : MonoBehaviour
         int characterID = int.Parse(parts[2]);
         if (players.TryGetValue(playerName, out PlayerInfo playerInfo))
         {
+            playerInfo.characterId = characterID;
             // First destroy the old visual if it exists
             if (playerInfo.visualRepresentation != null)
             {
@@ -117,7 +119,7 @@ public class RoomManager : MonoBehaviour
                 switch (characterID)
                 {
                     case 0:
-                        newSprite = Resources.Load<Sprite>("Sprites/PJ/KLCETIN/klcetin_0");
+                        newSprite = Resources.Load<Sprite>("Sprites/PJ/KLCETIN/klcetin_standing");
                         break;
                     case 1:
                         newSprite = Resources.Load<Sprite>("Sprites/PJ/DISCOBOY/discoboy_standing");
@@ -188,5 +190,13 @@ public class RoomManager : MonoBehaviour
     public List<string> GetRoomClients()
     {
         return new List<string>(players.Keys);
+    }
+    public int GetPlayerCharacterId(string playerName)
+    {
+        if (players.TryGetValue(playerName, out PlayerInfo playerInfo))
+        {
+            return playerInfo.characterId;
+        }
+        return 0;
     }
 }

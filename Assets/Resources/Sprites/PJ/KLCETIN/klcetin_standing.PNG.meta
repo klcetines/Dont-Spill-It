@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 9d614aa8644154c43be0983c87e3d2e7
+guid: 41e7a0e5dbdd7694da3020f34bece08c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1374441595803226307
-    second: discoboy_standing_0
-  - first:
-      213: 2683876846051454407
-    second: discoboy_standing_1
+      213: 4429702399185395891
+    second: klcetin_standing_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -103,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: discoboy_standing_0
+      name: klcetin_standing_0
       rect:
         serializedVersion: 2
-        x: 6
-        y: 16
-        width: 517
-        height: 900
+        x: 29
+        y: 21
+        width: 536
+        height: 835
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -118,30 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d3fa0a596a00dece0800000000000000
-      internalID: -1374441595803226307
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: discoboy_standing_1
-      rect:
-        serializedVersion: 2
-        x: 326
-        y: 836
-        width: 68
-        height: 77
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7cdeacd85cb0f3520800000000000000
-      internalID: 2683876846051454407
+      spriteID: 3b0242cccd6797d30800000000000000
+      internalID: 4429702399185395891
       vertices: []
       indices: 
       edges: []
@@ -150,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: a6c8ca28816ffa049953a8c748933052
+    spriteID: 3e4b031b7d2777c4b99b7181189faa7e
     internalID: 0
     vertices: []
     indices: 
@@ -160,8 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      discoboy_standing_0: -1374441595803226307
-      discoboy_standing_1: 2683876846051454407
+      klcetin_standing_0: 4429702399185395891
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

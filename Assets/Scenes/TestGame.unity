@@ -430,6 +430,8 @@ MonoBehaviour:
   PJ_HUD_Prefab: {fileID: 1970532584015437509, guid: 4d44d5d2e688b4b4c8f3080db40c86b2, type: 3}
   turnTimeout: 15
   hudManager: {fileID: 2042677763}
+  klcetinPrefab: {fileID: 4650188532317054191, guid: 55d06c56aec895145af986da3faad31e, type: 3}
+  discoboyPrefab: {fileID: 4650188532317054191, guid: 82d25dab19062cd4197320e3110a1f5e, type: 3}
 --- !u!1 &830563235
 GameObject:
   m_ObjectHideFlags: 0

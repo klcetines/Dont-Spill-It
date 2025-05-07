@@ -4,14 +4,16 @@ using System.Collections.Generic;
 public class GameManager : MonoBehaviour
 {
     [Header("Game Objects")]
-    [SerializeField] private GameObject characterPrefab;
     [SerializeField] private GameObject PJ_HUD_Prefab;
 
     [Header("Game Settings")]
     [SerializeField] private float turnTimeout = 15f;
-
     [SerializeField] private PlayerHUDManager hudManager;
-
+    
+    [Header("Character Prefabs")]
+    [SerializeField] private GameObject klcetinPrefab;
+    [SerializeField] private GameObject discoboyPrefab;
+    private Dictionary<int, GameObject> characterPrefabs = new Dictionary<int, GameObject>();
 
     private RoomManager _RoomManager;
     private MainThreadDispatcher _MainThreadDispatcher;
@@ -34,11 +36,18 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            InitializeCharacterPrefabs();
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    private void InitializeCharacterPrefabs()
+    {
+        characterPrefabs.Add(0, klcetinPrefab);
+        characterPrefabs.Add(1, discoboyPrefab);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -95,7 +104,12 @@ public class GameManager : MonoBehaviour
         PathNode startNode = _MapPath.GetFirstNode();
         if (startNode != null)
         {
-            GameObject player = Instantiate(characterPrefab, startNode.transform.position, Quaternion.identity);
+            // Get the player's selected character ID from RoomManager
+            int characterId = _RoomManager.GetPlayerCharacterId(playerName);
+            GameObject prefabToUse = characterPrefabs.ContainsKey(characterId) ? 
+                characterPrefabs[characterId] : characterPrefabs[0]; // Default to first character if invalid ID
+
+            GameObject player = Instantiate(prefabToUse, startNode.transform.position, Quaternion.identity);
             _playersDictionary[playerName] = player; 
 
             Character character = player.GetComponent<Character>();
