@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: 16d807640a1e09a4e9360ca8e9477d6b
+guid: 85360d16186b4f14dac4a8eea9173d5d
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2555367647144294544
-    second: pixil-frame-0 (13)_0
+      213: -273035128152789934
+    second: InisdeLife_0
+  - first:
+      213: 4268087174532222784
+    second: InisdeLife_1
+  - first:
+      213: -2842804557556595894
+    second: InisdeLife_2
+  - first:
+      213: 2255303928405894439
+    second: InisdeLife_3
+  - first:
+      213: 7668777685555931118
+    second: InisdeLife_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +112,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pixil-frame-0 (13)_0
+      name: InisdeLife_0
       rect:
         serializedVersion: 2
-        x: 367
-        y: 1010
-        width: 1264
-        height: 434
+        x: 732
+        y: 1067
+        width: 886
+        height: 156
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +127,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 098bf8e065d767320800000000000000
-      internalID: 2555367647144294544
+      spriteID: 25cef3f5ffbf53cf0800000000000000
+      internalID: -273035128152789934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InisdeLife_1
+      rect:
+        serializedVersion: 2
+        x: 970
+        y: 1068
+        width: 41
+        height: 156
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04fc4640caa4b3b30800000000000000
+      internalID: 4268087174532222784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InisdeLife_2
+      rect:
+        serializedVersion: 2
+        x: 1017
+        y: 1070
+        width: 264
+        height: 147
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a434af411545c88d0800000000000000
+      internalID: -2842804557556595894
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InisdeLife_3
+      rect:
+        serializedVersion: 2
+        x: 1285
+        y: 1066
+        width: 43
+        height: 156
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7252d2949f27c4f10800000000000000
+      internalID: 2255303928405894439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: InisdeLife_4
+      rect:
+        serializedVersion: 2
+        x: 1333
+        y: 1069
+        width: 284
+        height: 145
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee7e0019ca8fc6a60800000000000000
+      internalID: 7668777685555931118
       vertices: []
       indices: 
       edges: []
@@ -125,7 +225,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6c6b1a0fd86aac6478ed9ef2245f6223
+    spriteID: 1f1ea6efd4912ae47b834e48570d4697
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      pixil-frame-0 (13)_0: 2555367647144294544
+      InisdeLife_0: -273035128152789934
+      InisdeLife_1: 4268087174532222784
+      InisdeLife_2: -2842804557556595894
+      InisdeLife_3: 2255303928405894439
+      InisdeLife_4: 7668777685555931118
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

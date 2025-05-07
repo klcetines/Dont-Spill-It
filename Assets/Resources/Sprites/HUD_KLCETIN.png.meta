@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 16d807640a1e09a4e9360ca8e9477d6b
+guid: 8cefa2e1a4c271147aa32e1c56c24d6c
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2555367647144294544
-    second: pixil-frame-0 (13)_0
+      213: -4047890147865499032
+    second: HUD_KLCETIN_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pixil-frame-0 (13)_0
+      name: HUD_KLCETIN_0
       rect:
         serializedVersion: 2
-        x: 367
-        y: 1010
-        width: 1264
-        height: 434
+        x: 11
+        y: 18
+        width: 1267
+        height: 436
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 098bf8e065d767320800000000000000
-      internalID: 2555367647144294544
+      spriteID: 86a6cae6b5103d7c0800000000000000
+      internalID: -4047890147865499032
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 6c6b1a0fd86aac6478ed9ef2245f6223
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -134,8 +134,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      pixil-frame-0 (13)_0: 2555367647144294544
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

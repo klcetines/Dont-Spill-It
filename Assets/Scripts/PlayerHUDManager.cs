@@ -2,10 +2,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class PlayerHUDManager : MonoBehaviour
 {
-    public GameObject playerHUDPrefab;
+    private Dictionary<string, PlayerHUD> playerHUDs = new Dictionary<string, PlayerHUD>();
+
     public float activePlayerScale = 1f;
     public float inactivePlayerScale = 0.75f;
     public float spacing = 10f;
@@ -13,7 +15,6 @@ public class PlayerHUDManager : MonoBehaviour
 
     private VerticalLayoutGroup layoutGroup;
     private int currentActivePlayerIndex = 0;
-    private GameObject[] playerHUDs;
     
     void Start()
     {
@@ -22,9 +23,15 @@ public class PlayerHUDManager : MonoBehaviour
 
     public void UpdatePlayerOrder(List<string> playerOrder)
     {
-        if (playerHUDs == null || playerHUDs.Length != playerOrder.Count)
+        if (playerHUDs == null || playerHUDs.Count != playerOrder.Count)
         {
-            InitializePlayerHUDs(playerOrder.Count);
+            foreach (string playerName in playerOrder)
+            {
+                if (!playerHUDs.ContainsKey(playerName))
+                {
+                    Debug.LogWarning($"Missing HUD for player {playerName}");
+                }
+            }
         }
 
         UpdateHUDLayout();
@@ -32,106 +39,103 @@ public class PlayerHUDManager : MonoBehaviour
 
     public void UpdateActivePlayer(int index)
     {
+        Debug.Log($"Existe: {playerHUDs.Count}");
         // Check if HUDs are initialized
-        if (playerHUDs == null)
+        if (playerHUDs == null || playerHUDs.Count == 0)
         {
-            Debug.LogError("Player HUDs not initialized. Call InitializePlayerHUDs first.");
+            Debug.LogError("No Player HUDs initialized.");
             return;
         }
 
-        if (index < 0 || index >= playerHUDs.Length)
+        if (index < 0 || index >= playerHUDs.Count)
         {
-            Debug.LogError($"Invalid player index: {index}. Must be between 0 and {playerHUDs.Length - 1}");
+            Debug.LogError($"Invalid player index: {index}. Must be between 0 and {playerHUDs.Count - 1}");
             return;
         }
 
         SetActivePlayerAnimated(index);
     }
 
-    public void InitializePlayerHUDs(int playerCount)
+    public void InitializePlayerHUD(string playerName, int characterId, Character character)
     {
         EnsureLayoutGroupInitialized();
 
-        // Clear existing HUDs
-        foreach (Transform child in transform)
+        if (playerHUDs.ContainsKey(playerName))
         {
-            Destroy(child.gameObject);
+            Debug.LogWarning($"HUD already exists for player {playerName}");
+            return;
         }
 
-        playerHUDs = new GameObject[playerCount];
-        float yOffset = 0;
-
-        for (int i = 0; i < playerCount; i++)
+        GameObject hudPrefab = GameManager.Instance.GetHUDPrefab(characterId);
+        GameObject hudGO = Instantiate(hudPrefab, transform);
+        PlayerHUD hud = hudGO.GetComponent<PlayerHUD>();
+        
+        if (hud != null)
         {
-            GameObject hud = Instantiate(playerHUDPrefab, transform);
-            playerHUDs[i] = hud;
-            
-            RectTransform hudRT = hud.GetComponent<RectTransform>();
+            hud.Initialize(playerName, character);
+            playerHUDs.Add(playerName, hud);
+            character.SetHUD(hud);
+
+            // Configurar el RectTransform del HUD
+            RectTransform hudRT = hudGO.GetComponent<RectTransform>();
             if (hudRT != null)
             {
-                // Configure anchors for vertical layout
+                // Set anchors for vertical stacking
                 hudRT.anchorMin = new Vector2(0, 1);
                 hudRT.anchorMax = new Vector2(1, 1);
                 hudRT.pivot = new Vector2(0.5f, 1);
-                hudRT.sizeDelta = new Vector2(0, 60);
                 
-                // Position each HUD vertically with spacing
-                yOffset -= (i > 0 ? layoutGroup.spacing + hudRT.sizeDelta.y : 0);
-                hudRT.anchoredPosition = new Vector2(0, yOffset);
+                // Calculate vertical position based on number of existing HUDs
+                float yPosition = -((playerHUDs.Count - 1) * 150f);
+                hudRT.anchoredPosition = new Vector2(0, yPosition);
+                
+                hudRT.sizeDelta = new Vector2(0, 100); // Height of 100 pixels
+                hudRT.localScale = Vector3.one * inactivePlayerScale;
             }
-            
-            hud.transform.localScale = i == currentActivePlayerIndex ? 
-                Vector3.one * activePlayerScale : 
-                Vector3.one * inactivePlayerScale;
-        }
 
-        // Force immediate layout update
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
+            // Añadir y configurar LayoutElement
+            LayoutElement layoutElement = hudGO.GetComponent<LayoutElement>();
+            if (layoutElement == null)
+                layoutElement = hudGO.AddComponent<LayoutElement>();
+            
+            layoutElement.minHeight = 100;
+            layoutElement.preferredHeight = 100;
+            layoutElement.flexibleHeight = 0;
+            layoutElement.minWidth = 250;
+            layoutElement.preferredWidth = 250;
+            layoutElement.flexibleWidth = 0;
+        }
     }
 
     private void EnsureLayoutGroupInitialized()
     {
-        // First check if we have a parent
         if (transform.parent == null)
         {
-            Debug.LogWarning("PlayerHUDManager needs a parent object with VerticalLayoutGroup. Creating one.");
-            
-            // Create parent container
             GameObject container = new GameObject("HUD_Container");
-            container.transform.SetParent(transform.parent, false);
+            Canvas canvas = FindObjectOfType<Canvas>();
+            if (canvas == null)
+            {
+                canvas = new GameObject("Canvas").AddComponent<Canvas>();
+                canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                canvas.gameObject.AddComponent<CanvasScaler>();
+                canvas.gameObject.AddComponent<GraphicRaycaster>();
+            }
             
-            // Move this object to be a child of the new container
+            container.transform.SetParent(canvas.transform, false);
+            
+            RectTransform containerRT = container.AddComponent<RectTransform>();
+            containerRT.anchorMin = new Vector2(0, 0);
+            containerRT.anchorMax = new Vector2(0.3f, 1);
+            containerRT.pivot = new Vector2(0, 1);
+            containerRT.anchoredPosition = new Vector2(20, -20);
+            
+            layoutGroup = container.GetComponent<VerticalLayoutGroup>();
+            if (layoutGroup != null)
+            {
+                DestroyImmediate(layoutGroup);
+            }
+
             transform.SetParent(container.transform, false);
-        }
-
-        // Now we can safely look for or add the VerticalLayoutGroup
-        if (layoutGroup == null)
-        {
-            layoutGroup = transform.parent.GetComponent<VerticalLayoutGroup>();
-            if (layoutGroup == null)
-            {
-                layoutGroup = transform.parent.gameObject.AddComponent<VerticalLayoutGroup>();
-            }
-
-            // Configure VerticalLayoutGroup
-            layoutGroup.spacing = 20f;
-            layoutGroup.padding = new RectOffset(10, 10, 20, 20);
-            layoutGroup.childAlignment = TextAnchor.UpperCenter;
-            layoutGroup.childControlHeight = false; // Changed to false
-            layoutGroup.childControlWidth = true;
-            layoutGroup.childForceExpandHeight = false;
-            layoutGroup.childForceExpandWidth = true;
-
-            RectTransform containerRT = layoutGroup.GetComponent<RectTransform>();
-            if (containerRT != null)
-            {
-                containerRT.anchorMin = new Vector2(0, 1);
-                containerRT.anchorMax = new Vector2(0, 1);
-                containerRT.pivot = new Vector2(0, 1);
-                containerRT.sizeDelta = new Vector2(300, 500);
-                containerRT.anchoredPosition = new Vector2(50, -50);
-            }
         }
     }
 
@@ -139,26 +143,30 @@ public class PlayerHUDManager : MonoBehaviour
     {
         EnsureLayoutGroupInitialized();
 
-        // Desactivar temporalmente el layout group para hacer cambios manuales
+        // Disable layout group temporarily
         layoutGroup.enabled = false;
 
-        // Mover el HUD activo a su posición correcta
-        playerHUDs[currentActivePlayerIndex].transform.SetSiblingIndex(currentActivePlayerIndex);
+        // Get the active player name using the index
+        string activeName = playerHUDs.Keys.ElementAt(currentActivePlayerIndex);
+        if (playerHUDs.TryGetValue(activeName, out PlayerHUD activeHUD))
+        {
+            activeHUD.transform.SetSiblingIndex(currentActivePlayerIndex);
+        }
 
-        // Volver a activar el layout group
+        // Re-enable layout group
         layoutGroup.enabled = true;
 
-        // Forzar la actualización del layout
+        // Force layout update
         LayoutRebuilder.ForceRebuildLayoutImmediate(layoutGroup.GetComponent<RectTransform>());
     }
 
     private IEnumerator SmoothTransition(int newActiveIndex)
     {
-        // Guardar referencias a las escalas originales
-        Vector3[] startScales = new Vector3[playerHUDs.Length];
-        for (int i = 0; i < playerHUDs.Length; i++)
+        // Store original scales
+        Dictionary<string, Vector3> startScales = new Dictionary<string, Vector3>();
+        foreach (var hud in playerHUDs)
         {
-            startScales[i] = playerHUDs[i].transform.localScale;
+            startScales[hud.Key] = hud.Value.transform.localScale;
         }
 
         float elapsed = 0f;
@@ -168,14 +176,17 @@ public class PlayerHUDManager : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / transitionDuration);
             
-            for (int i = 0; i < playerHUDs.Length; i++)
+            int currentIndex = 0;
+            foreach (var hud in playerHUDs)
             {
-                Vector3 targetScale = i == newActiveIndex ? 
+                Vector3 targetScale = currentIndex == newActiveIndex ? 
                     Vector3.one * activePlayerScale : 
                     Vector3.one * inactivePlayerScale;
                     
-                playerHUDs[i].transform.localScale = 
-                    Vector3.Lerp(startScales[i], targetScale, t);
+                hud.Value.transform.localScale = 
+                    Vector3.Lerp(startScales[hud.Key], targetScale, t);
+                
+                currentIndex++;
             }
             
             yield return null;
@@ -188,7 +199,7 @@ public class PlayerHUDManager : MonoBehaviour
     // Llamar esto en lugar de SetActivePlayer para la versión animada
     public void SetActivePlayerAnimated(int playerIndex)
     {
-        if (playerIndex < 0 || playerIndex >= playerHUDs.Length) return;
+        if (playerIndex < 0 || playerIndex >= playerHUDs.Count) return;
         StartCoroutine(SmoothTransition(playerIndex));
     }
 

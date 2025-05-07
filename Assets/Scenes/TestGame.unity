@@ -426,12 +426,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92e996008098ebc42aae34607bd05389, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterPrefab: {fileID: 4650188532317054191, guid: 55d06c56aec895145af986da3faad31e, type: 3}
   PJ_HUD_Prefab: {fileID: 1970532584015437509, guid: 4d44d5d2e688b4b4c8f3080db40c86b2, type: 3}
   turnTimeout: 15
   hudManager: {fileID: 2042677763}
   klcetinPrefab: {fileID: 4650188532317054191, guid: 55d06c56aec895145af986da3faad31e, type: 3}
   discoboyPrefab: {fileID: 4650188532317054191, guid: 82d25dab19062cd4197320e3110a1f5e, type: 3}
+  klcetinHUDPrefab: {fileID: 1970532584015437509, guid: 55acd58dbe0458a41993b5ce72dbf276, type: 3}
+  discoboyHUDPrefab: {fileID: 1970532584015437509, guid: 4d44d5d2e688b4b4c8f3080db40c86b2, type: 3}
 --- !u!1 &830563235
 GameObject:
   m_ObjectHideFlags: 0
@@ -16672,7 +16673,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f90656251399beb4ea297bdf09771317, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerHUDPrefab: {fileID: 1970532584015437509, guid: 4d44d5d2e688b4b4c8f3080db40c86b2, type: 3}
   activePlayerScale: 1
   inactivePlayerScale: 0.75
   spacing: 10

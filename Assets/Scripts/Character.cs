@@ -4,6 +4,10 @@ using System.Collections.Generic;
 
 public class Character : MonoBehaviour
 {
+    private PlayerHUD _playerHUD;
+    private float _liquid = 0f;
+    private float _health = 100f;
+
     private MapPath _mapPath;
     private PathNode currentNode;
     private string _playerName;
@@ -14,7 +18,6 @@ public class Character : MonoBehaviour
     private bool _isMoving { get; set; }
     private float moveSpeed = 2f;
 
-    private int resources = 0;
 
     private Animator _animator;
     private Vector2 _velocity;
@@ -179,21 +182,38 @@ public class Character : MonoBehaviour
         }
     }
 
+    public void SetHUD(PlayerHUD hud)
+    {
+        _playerHUD = hud;
+        UpdateHUDValues();
+    }
+
+    private void UpdateHUDValues()
+    {
+        if (_playerHUD != null)
+        {
+            _playerHUD.UpdateLiquid(_liquid);
+            _playerHUD.UpdateHealth(_health);
+        }
+    }
+
     private void AddResources(int amount)
     {
-        resources += amount;
-        Debug.Log($"Added {amount} resources. New total: {resources}");
+        _liquid += amount;
+        UpdateHUDValues();
     }
 
     private void RemoveResources(int amount)
     {
-        resources = Mathf.Max(0, resources - amount);
-        Debug.Log($"Removed {amount} resources. New total: {resources}");
+        _liquid = Mathf.Max(0, _liquid - amount);
+        UpdateHUDValues();
+        Debug.Log($"Removed {amount} resources. New total: {_liquid}");
     }
 
     private void DepositResources()
     {
-        Debug.Log($"Deposited {resources} resources at well");
-        resources = 0;
+        Debug.Log($"Deposited {_liquid} resources at well");
+        _liquid = 0;
+        UpdateHUDValues();
     }
 }

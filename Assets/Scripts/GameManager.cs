@@ -15,6 +15,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject discoboyPrefab;
     private Dictionary<int, GameObject> characterPrefabs = new Dictionary<int, GameObject>();
 
+    [Header("Game Objects")]
+    [SerializeField] private GameObject klcetinHUDPrefab;
+    [SerializeField] private GameObject discoboyHUDPrefab;
+    private Dictionary<int, GameObject> hudPrefabs = new Dictionary<int, GameObject>();
+
     private RoomManager _RoomManager;
     private MainThreadDispatcher _MainThreadDispatcher;
     private MapPath _MapPath;
@@ -48,6 +53,9 @@ public class GameManager : MonoBehaviour
     {
         characterPrefabs.Add(0, klcetinPrefab);
         characterPrefabs.Add(1, discoboyPrefab);
+        
+        hudPrefabs.Add(0, klcetinHUDPrefab);
+        hudPrefabs.Add(1, discoboyHUDPrefab);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -56,13 +64,14 @@ public class GameManager : MonoBehaviour
         _RoomManager = FindFirstObjectByType<RoomManager>();
         _MainThreadDispatcher = FindFirstObjectByType<MainThreadDispatcher>();
         _MapPath = FindFirstObjectByType<MapPath>();
+        hudManager = FindFirstObjectByType<PlayerHUDManager>();
 
-        if (_RoomManager == null || _MainThreadDispatcher == null || _MapPath == null)
+        if (_RoomManager == null || _MainThreadDispatcher == null || _MapPath == null || hudManager == null)
         {
             Debug.LogError("One or more required components are missing.");
             return;
         }
-
+        // Add delay to ensure everything is initialized
         StartGame();
     }
 
@@ -71,6 +80,8 @@ public class GameManager : MonoBehaviour
         if (_isGameActive) return;
 
         _playerOrder = _RoomManager.GetRoomClients();
+        Debug.Log($"Starting game with {_playerOrder.Count} players: {string.Join(", ", _playerOrder)}");
+
         if (_playerOrder.Count == 0)
         {
             Debug.LogError("No players in the room to start the game");
@@ -82,9 +93,8 @@ public class GameManager : MonoBehaviour
             InstantiatePlayerAtStart(name);
         }
 
-        hudManager.InitializePlayerHUDs(_playerOrder.Count);
-        _isGameActive = true;
-        StartPlayerTurn();
+        // Add delay before starting first turn
+        Invoke("InitialTurn", 0.5f);
     }
     
     void Update()
@@ -99,24 +109,38 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public GameObject GetHUDPrefab(int characterId)
+    {
+        return hudPrefabs.ContainsKey(characterId) ? hudPrefabs[characterId] : hudPrefabs[0];
+    }
+
+    private void InitialTurn()
+    {
+        _isGameActive = true;
+        StartPlayerTurn();
+    }
+
     private void InstantiatePlayerAtStart(string playerName)
     {
         PathNode startNode = _MapPath.GetFirstNode();
         if (startNode != null)
         {
-            // Get the player's selected character ID from RoomManager
             int characterId = _RoomManager.GetPlayerCharacterId(playerName);
+            Debug.Log($"Instantiating player {playerName} with character ID {characterId}");
+
             GameObject prefabToUse = characterPrefabs.ContainsKey(characterId) ? 
-                characterPrefabs[characterId] : characterPrefabs[0]; // Default to first character if invalid ID
+                characterPrefabs[characterId] : characterPrefabs[0];
 
             GameObject player = Instantiate(prefabToUse, startNode.transform.position, Quaternion.identity);
-            _playersDictionary[playerName] = player; 
+            _playersDictionary[playerName] = player;
 
             Character character = player.GetComponent<Character>();
             if (character != null)
             {
                 character.SetMapPath(_MapPath);
                 character.SetPlayerName(playerName);
+                hudManager.InitializePlayerHUD(playerName, characterId, character);
+                Debug.Log($"HUD initialized for player {playerName}");
             }
         }
         else
@@ -127,9 +151,16 @@ public class GameManager : MonoBehaviour
 
     private void StartPlayerTurn()
     {
+        if (_playerOrder == null || _playerOrder.Count == 0)
+        {
+            Debug.LogError("No players available for turn management");
+            return;
+        }
+
         _waitingForDiceThrow = true;
         _turnTimer = 0f;
         
+        Debug.Log($"Starting turn for player index {_currentPlayerIndex}");
         hudManager.UpdateActivePlayer(_currentPlayerIndex);
         
         string currentPlayerName = _playerOrder[_currentPlayerIndex];
