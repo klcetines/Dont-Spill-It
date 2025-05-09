@@ -6,6 +6,7 @@ using System.Linq;
 
 public class PlayerHUDManager : MonoBehaviour
 {
+    [SerializeField] private VerticalLayoutGroup layoutGroup;
     private Dictionary<string, PlayerHUD> playerHUDs = new Dictionary<string, PlayerHUD>();
 
     public float activePlayerScale = 1f;
@@ -13,7 +14,6 @@ public class PlayerHUDManager : MonoBehaviour
     public float spacing = 10f;
     public float transitionDuration = 0.3f;
 
-    private VerticalLayoutGroup layoutGroup;
     private int currentActivePlayerIndex = 0;
     
     void Start()
@@ -58,8 +58,6 @@ public class PlayerHUDManager : MonoBehaviour
 
     public void InitializePlayerHUD(string playerName, int characterId, Character character)
     {
-        EnsureLayoutGroupInitialized();
-
         if (playerHUDs.ContainsKey(playerName))
         {
             Debug.LogWarning($"HUD already exists for player {playerName}");
@@ -67,43 +65,32 @@ public class PlayerHUDManager : MonoBehaviour
         }
 
         GameObject hudPrefab = GameManager.Instance.GetHUDPrefab(characterId);
-        GameObject hudGO = Instantiate(hudPrefab, transform);
+        GameObject hudGO = Instantiate(hudPrefab, layoutGroup.transform); // Instancia como hijo del VerticalContainer
         PlayerHUD hud = hudGO.GetComponent<PlayerHUD>();
-        
+
         if (hud != null)
         {
             hud.Initialize(playerName, character);
             playerHUDs.Add(playerName, hud);
             character.SetHUD(hud);
 
-            // Configurar el RectTransform del HUD
             RectTransform hudRT = hudGO.GetComponent<RectTransform>();
             if (hudRT != null)
             {
-                // Set anchors for vertical stacking
                 hudRT.anchorMin = new Vector2(0, 1);
                 hudRT.anchorMax = new Vector2(1, 1);
                 hudRT.pivot = new Vector2(0.5f, 1);
-                
-                // Calculate vertical position based on number of existing HUDs
-                float yPosition = -((playerHUDs.Count - 1) * 150f);
-                hudRT.anchoredPosition = new Vector2(0, yPosition);
-                
-                hudRT.sizeDelta = new Vector2(0, 100); // Height of 100 pixels
+                hudRT.sizeDelta = new Vector2(0, 100);
                 hudRT.localScale = Vector3.one * inactivePlayerScale;
             }
 
-            // Añadir y configurar LayoutElement
             LayoutElement layoutElement = hudGO.GetComponent<LayoutElement>();
             if (layoutElement == null)
                 layoutElement = hudGO.AddComponent<LayoutElement>();
-            
             layoutElement.minHeight = 100;
             layoutElement.preferredHeight = 100;
             layoutElement.flexibleHeight = 0;
-            layoutElement.minWidth = 250;
-            layoutElement.preferredWidth = 250;
-            layoutElement.flexibleWidth = 0;
+            layoutElement.flexibleWidth = 1;
         }
     }
 
