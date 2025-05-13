@@ -3,12 +3,10 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("Game Objects")]
-    [SerializeField] private GameObject PJ_HUD_Prefab;
-
     [Header("Game Settings")]
     [SerializeField] private float turnTimeout = 15f;
     [SerializeField] private PlayerHUDManager hudManager;
+    [SerializeField] private GameObject wellDecisionPanel;
     
     [Header("Character Prefabs")]
     [SerializeField] private GameObject klcetinPrefab;
@@ -295,6 +293,28 @@ public class GameManager : MonoBehaviour
         _isMiniGameActive = false;
         _currentPlayerIndex = 0;
         StartPlayerTurn();
+    }
+
+    public void ShowWellDecisionPanel(System.Action<bool> onDecision)
+    {
+        wellDecisionPanel.SetActive(true);
+        _wellDecisionCallback = onDecision;
+    }
+
+    public void HideWellDecisionPanel()
+    {
+        wellDecisionPanel.SetActive(false);
+        _wellDecisionCallback = null;
+    }
+
+    // Callback para guardar la acción a ejecutar tras la decisión
+    private System.Action<bool> _wellDecisionCallback;
+
+    // Llama esto desde los botones del panel
+    public void OnWellDecisionButton(bool deposit)
+    {
+        HideWellDecisionPanel();
+        _wellDecisionCallback?.Invoke(deposit);
     }
 
 }

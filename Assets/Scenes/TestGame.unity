@@ -17262,8 +17262,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 232.14963, y: -276}
-  m_SizeDelta: {x: 335.1808, y: 552}
+  m_AnchoredPosition: {x: 358.39075, y: -276}
+  m_SizeDelta: {x: 454.7775, y: 552}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1989454732
 MonoBehaviour:
@@ -17285,11 +17285,11 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_Spacing: 15
   m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
+  m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
+  m_ChildControlHeight: 1
+  m_ChildScaleWidth: 1
+  m_ChildScaleHeight: 1
   m_ReverseArrangement: 0
 --- !u!1 &1998507087
 GameObject:
@@ -17503,7 +17503,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 448.1334, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2042677763
 MonoBehaviour:
@@ -17518,8 +17518,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   layoutGroup: {fileID: 1989454732}
-  activePlayerScale: 1
-  inactivePlayerScale: 0.75
+  activePlayerScale: 1.5
+  inactivePlayerScale: 1
   spacing: 10
   transitionDuration: 0.3
 --- !u!1 &2096013258

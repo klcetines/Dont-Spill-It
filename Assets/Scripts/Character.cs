@@ -25,6 +25,9 @@ public class Character : MonoBehaviour
     private static readonly string Y_SPEED = "YSpeed";
     private static readonly string STILL_TRIGGER = "Still";
 
+    private bool waitingForWellDecision = false;
+    private bool wellDecisionDeposit = false;
+
 
     public void SetPlayerName(string name)
     {
@@ -99,6 +102,22 @@ public class Character : MonoBehaviour
                     _isMoving = false;
                 }
                 yield return null;
+            }
+
+            currentNode = node;
+
+           if (node.GetNodeType() == PathNode.NodeType.Well)
+            {
+                waitingForWellDecision = true;
+                GameManager.Instance.ShowWellDecisionPanel((deposit) => {
+                    wellDecisionDeposit = deposit;
+                    waitingForWellDecision = false;
+                    if (wellDecisionDeposit)
+                        DepositResources();
+                });
+
+                while (waitingForWellDecision)
+                    yield return null;
             }
         }
         onComplete?.Invoke();
@@ -216,4 +235,5 @@ public class Character : MonoBehaviour
         _liquid = 0;
         UpdateHUDValues();
     }
+
 }
