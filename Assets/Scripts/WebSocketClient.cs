@@ -43,6 +43,12 @@ public class WebSocketClient : MonoBehaviour
         {
             MiniGamesManager.Instance.HandleVote(PlayerName, message);
         }
+        else if(message.StartsWith("MINIGAME2_ANSWER")){
+            MiniGamesManager.Instance.HandleMatchAnswers(PlayerName, message);
+        }
+        else if(message.StartsWith("MINIGAME2_VOTE")){
+            MiniGamesManager.Instance.HandleMinigame2Vote(PlayerName, message);
+        }
         else{
             GameManager.Instance.HandlePlayerAction(PlayerName, message);
         }

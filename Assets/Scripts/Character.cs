@@ -7,10 +7,10 @@ public class Character : MonoBehaviour
     private PlayerHUD _playerHUD;
     private float _liquid = 0f;
     private float _health = 100f;
+    private float _liquidOnWell = 0f;
 
     private MapPath _mapPath;
     private PathNode currentNode;
-    private string _playerName;
 
     bool diceUsed = false;
 
@@ -27,12 +27,6 @@ public class Character : MonoBehaviour
 
     private bool waitingForWellDecision = false;
     private bool wellDecisionDeposit = false;
-
-
-    public void SetPlayerName(string name)
-    {
-        _playerName = name;
-    }
 
     public void SetMapPath(MapPath mapPath){
         _mapPath = mapPath;
@@ -94,6 +88,8 @@ public class Character : MonoBehaviour
             _targetPosition = node.transform.position;
             _isMoving = true;
 
+            AudioManager.Instance?.PlayWalkLoop();
+
             while (_isMoving)
             {
                 transform.position = Vector3.MoveTowards(transform.position, _targetPosition, moveSpeed * Time.deltaTime);
@@ -108,18 +104,15 @@ public class Character : MonoBehaviour
 
            if (node.GetNodeType() == PathNode.NodeType.Well)
             {
+                AudioManager.Instance?.StopWalkLoop();
                 waitingForWellDecision = true;
-                GameManager.Instance.ShowWellDecisionPanel((deposit) => {
-                    wellDecisionDeposit = deposit;
-                    waitingForWellDecision = false;
-                    if (wellDecisionDeposit)
-                        DepositResources();
-                });
+                GameManager.Instance.ShowWellDecisionPanel();
 
                 while (waitingForWellDecision)
                     yield return null;
             }
         }
+        AudioManager.Instance?.StopWalkLoop();
         onComplete?.Invoke();
     }
 
@@ -180,10 +173,12 @@ public class Character : MonoBehaviour
             {
                 case PathNode.NodeType.Giver:
                     Debug.Log("Giver Node Effect");
+                    AudioManager.Instance?.PlayGiver();
                     AddResources(10);
                     break;
                 case PathNode.NodeType.Drainer:
                     Debug.Log("Drainer Node Effect");
+                    AudioManager.Instance?.PlayDrainer();
                     RemoveResources(5);
                     break;
                 case PathNode.NodeType.Well:
@@ -229,11 +224,18 @@ public class Character : MonoBehaviour
         Debug.Log($"Removed {amount} resources. New total: {_liquid}");
     }
 
-    private void DepositResources()
+    public void DepositResources()
     {
-        Debug.Log($"Deposited {_liquid} resources at well");
+        _liquidOnWell += _liquid;
         _liquid = 0;
         UpdateHUDValues();
+        AudioManager.Instance?.PlayWell();
+        Debug.Log($"Deposited resources. New total on well: {_liquidOnWell}");
+    }
+
+    public void SetWaitingForWellDecision(bool value)
+    {
+        waitingForWellDecision = value;
     }
 
 }

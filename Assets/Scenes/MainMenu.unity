@@ -255,6 +255,59 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 53224696}
   m_CullTransparentMesh: 1
+--- !u!1 &279181472
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 279181474}
+  - component: {fileID: 279181473}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &279181473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 279181472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b842318d8614dc4080e9b414d1afbc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkClip: {fileID: 8300000, guid: 42862ff45829f6546a8d1fa7e9219692, type: 3}
+  giverClip: {fileID: 8300000, guid: 3332ddd714ae55047a20544c57190374, type: 3}
+  drainerClip: {fileID: 8300000, guid: 0beb49ed8b032a144973baea93001eb6, type: 3}
+  wellClip: {fileID: 8300000, guid: 3332ddd714ae55047a20544c57190374, type: 3}
+  backgroundMusicClips:
+  - {fileID: 8300000, guid: 892e174b635309640996904eebbd5794, type: 3}
+  - {fileID: 8300000, guid: 6534ba7ec0d004b44a7f8584494d7704, type: 3}
+  - {fileID: 8300000, guid: c24d111780ff20b48b21f7505403f530, type: 3}
+  musicVolume: 0.05
+--- !u!4 &279181474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 279181472}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.49649978, y: -1.578056, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &311043502
 GameObject:
   m_ObjectHideFlags: 0
@@ -1364,3 +1417,4 @@ SceneRoots:
   - {fileID: 1151624486}
   - {fileID: 379384761}
   - {fileID: 2125669019}
+  - {fileID: 279181474}

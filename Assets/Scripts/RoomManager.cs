@@ -191,6 +191,7 @@ public class RoomManager : MonoBehaviour
     {
         return new List<string>(players.Keys);
     }
+    
     public int GetPlayerCharacterId(string playerName)
     {
         if (players.TryGetValue(playerName, out PlayerInfo playerInfo))

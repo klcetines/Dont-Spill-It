@@ -56,11 +56,15 @@ wss.on('connection', (ws, req) => {
                 }
                 else if (messageStr.startsWith('VOTE')) {
                     sendToUnity(room, playerName, messageStr);
-                } 
-                else {
-                    console.log('Mensaje no reconocido:', messageStr);
                 }
-            } catch (e) {
+                else if (messageStr.startsWith('MINIGAME2')) {
+                    sendToUnity(room, playerName, messageStr);
+                } 
+                else if (messageStr.endsWith('WELL')) {
+                    sendToUnity(room, playerName, messageStr);
+                }
+            } 
+            catch (e) {
                 console.error('Error procesando mensaje:', e);
             }
         });

@@ -17,6 +17,7 @@ public class MainThreadDispatcher : MonoBehaviour
             Destroy(gameObject);
         }
     }
+    
     public static void ExecuteOnMainThread(Action action)
     {
         lock (_executionQueue)

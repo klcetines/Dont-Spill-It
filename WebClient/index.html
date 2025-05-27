@@ -78,6 +78,27 @@
             <button id="voteA" class="vote-btn">Opción A</button>
             <button id="voteB" class="vote-btn">Opción B</button>
         </div>
+
+        <!-- Answer Section -->
+        <div id="minigame2" style="display:none;">
+            <h3 id="minigame2-question"></h3>
+            <input type="text" id="minigame2-answer" placeholder="Escribe tu respuesta..." style="padding:8px; width:25%;">
+            <button id="minigame2-submit" class="vote-btn">Enviar respuesta</button>
+            <p id="minigame2-status"></p>
+        </div>
+        
+        <!-- Minigame 2 Options Voting -->
+        <div id="minigame2-voting" style="display:none;">
+            <h3>Vota por una opción:</h3>
+        </div>
+
+        <!-- Well UI -->
+        <div id="wellUI" style="display:none;">
+            <h3>Pozo</h3>
+            <p>¿Dejar tu líquido en el pozo?</p>
+            <button id="yes" class="vote-btn">Quiero</button>
+            <button id="no" class="vote-btn">No quiero</button>
+        </div>
         
         <p id="gameStatus"></p>
     </div>
@@ -136,6 +157,14 @@
                         document.getElementById('gameStatus').textContent = `Has votado por: ${vote}`;
                         hideVotingInterface();
                     }
+                    else if (msg === 'MINIGAME2_ANSWER_RECEIVED') {
+                        document.getElementById('minigame2').style.display = 'none';
+                        document.getElementById('minigame2-status').textContent = '';
+                    }
+                    else if(msg.startsWith('MINIGAME2_CHOICES')){
+                        const number = msg.split('|')[1];
+                        showMinigame2Voting(number);
+                    }
                     else if (msg.startsWith('VOTE_RESULT')) {
                         const result = msg.split('|')[1];
                         document.getElementById('gameStatus').textContent = `Resultado de la votación: ${result}`;
@@ -144,6 +173,13 @@
                         // Una vez confirmado el personaje, mostrar el juego
                         document.getElementById('characterSelect').style.display = 'none';
                         document.getElementById('game').style.display = 'block';
+                    }
+                    else if(msg === 'SHOW_WELL_UI'){
+                        showWellUI();
+                    }
+                    else if(msg.startsWith('WELLDECISION')){
+                        document.getElementById('wellUI').style.display = 'none';
+                        document.getElementById('gameStatus').textContent = 'Decisión tomada';
                     }
                     else {
                         console.log('Mensaje no reconocido:', msg);
@@ -211,13 +247,13 @@
         }
 
         function showGameInterface(gameID) {
-            // Hide dice interface
-            console.log(`Juego ${gameID} iniciado`);
             document.getElementById('diceSection').style.display = 'none';
-            
+            document.getElementById('voting').style.display = 'none';
+            document.getElementById('minigame2').style.display = 'none';
+
+            const gameStatus = document.getElementById('gameStatus');            
             const votingDiv = document.getElementById('voting');
-            const gameStatus = document.getElementById('gameStatus');
-            
+
             switch(gameID) {
                 case '1': // Voting game
                     votingDiv.style.display = 'block';
@@ -235,15 +271,74 @@
                         }
                     };
                     break;
-                    
+
+                case '2':
+                    // Mostrar el input para la respuesta
+                    document.getElementById('minigame2').style.display = 'block';
+                    gameStatus.textContent = 'Entra tu respuesta para el minijuego';
+                    document.getElementById('minigame2-answer').value = '';
+                    document.getElementById('minigame2-status').textContent = '';
+
+                    document.getElementById('minigame2-submit').onclick = () => {
+                        const answer = document.getElementById('minigame2-answer').value.trim();
+                        if (ws && ws.readyState === WebSocket.OPEN && answer.length > 0) {
+                            ws.send(`MINIGAME2_ANSWER|${answer}`);
+                            document.getElementById('minigame2-status').textContent = 'Respuesta enviada!';
+                            document.getElementById('minigame2-submit').disabled = true;
+                        }
+                    };
+                    break;
                 default:
                     gameStatus.textContent = `Juego ${gameID} iniciado`;
+                    if (votingDiv) {
+                        votingDiv.style.display = 'none';
+                    }
                     votingDiv.style.display = 'none';
             }
         }
 
         function hideVotingInterface() {
             document.getElementById('voting').style.display = 'none';
+        }
+
+        function showWellUI() {
+            document.getElementById('wellUI').style.display = 'block';
+            document.getElementById('yes').onclick = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send("YES_WELL");
+                }
+            };
+            document.getElementById('no').onclick = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send("NO_WELL");
+                }
+            };
+        }
+
+        function showMinigame2Voting(n) {
+            if (n < 1 || n > 6) {
+            console.error("El número de opciones debe estar entre 1 y 6.");
+            return;
+            }
+
+            const votingDiv = document.getElementById('minigame2-voting');
+            votingDiv.innerHTML = ''; // Limpiar contenido previo
+            votingDiv.style.display = 'block';
+
+            const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+            for (let i = 0; i < n; i++) {
+            const button = document.createElement('button');
+            button.textContent = `${letters[i]}`;
+            button.className = 'vote-btn';
+            button.onclick = () => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(`MINIGAME2_VOTE|${letters[i]}`);
+                document.getElementById('gameStatus').textContent = `Has votado por: ${letters[i]}`;
+                votingDiv.style.display = 'none';
+                }
+            };
+            votingDiv.appendChild(button);
+            }
         }
 
     </script>

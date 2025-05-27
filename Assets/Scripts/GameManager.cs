@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] private BoardGameCamera boardGameCamera;
+
     [Header("Game Settings")]
     [SerializeField] private float turnTimeout = 15f;
     [SerializeField] private PlayerHUDManager hudManager;
@@ -30,6 +32,7 @@ public class GameManager : MonoBehaviour
     private float _turnTimer = 0f;
     private bool _isGameActive = false;
     private bool _isMiniGameActive = false;
+    private bool _waitingWellDecision = false;
 
     public static GameManager Instance { get; private set; }
 
@@ -136,7 +139,6 @@ public class GameManager : MonoBehaviour
             if (character != null)
             {
                 character.SetMapPath(_MapPath);
-                character.SetPlayerName(playerName);
                 hudManager.InitializePlayerHUD(playerName, characterId, character);
                 Debug.Log($"HUD initialized for player {playerName}");
             }
@@ -162,6 +164,12 @@ public class GameManager : MonoBehaviour
         hudManager.UpdateActivePlayer(_currentPlayerIndex);
         
         string currentPlayerName = _playerOrder[_currentPlayerIndex];
+
+        if (boardGameCamera != null && _playersDictionary.TryGetValue(currentPlayerName, out GameObject playerGO))
+        {
+            boardGameCamera.SetTarget(playerGO.transform);
+        }
+
         _RoomManager.SendToClient(currentPlayerName, "YOURTURN|15");
     }
 
@@ -169,13 +177,21 @@ public class GameManager : MonoBehaviour
     {
         if (action == "THROW_DICE" && IsPlayerTurn(playerName))
         {
-            if (_playersDictionary.TryGetValue(playerName, out GameObject player))
+
+            ThrowDice(playerName);
+
+        }
+        else if ((action == "YES_WELL" || action == "NO_WELL") && _waitingWellDecision)
+        {
+            if (action.StartsWith("YES"))
             {
-                Character character = player.GetComponent<Character>();
-                if (character != null)
-                {
-                    ThrowDice(playerName);
-                }
+                _RoomManager.SendToClient(playerName, "WELLDECISION|YES");
+                HandleWellDecision(playerName, true);
+            }
+            else
+            {
+                _RoomManager.SendToClient(playerName, "WELLDECISION|NO");
+                HandleWellDecision(playerName, false);
             }
         }
     }
@@ -199,10 +215,10 @@ public class GameManager : MonoBehaviour
     {
         if (character != null)
         {
+            string currentPlayerName = _playerOrder[_currentPlayerIndex];
+            _RoomManager.SendToClient(currentPlayerName, $"DICETHROWN|{diceValue}");
             character.MoveOnMapPath(diceValue, () => {
                 character.PathNodeEffect();
-                string currentPlayerName = _playerOrder[_currentPlayerIndex];
-                _RoomManager.SendToClient(currentPlayerName, $"DICETHROWN|{diceValue}");
                 EndTurn();
             });
         }
@@ -244,11 +260,10 @@ public class GameManager : MonoBehaviour
 
     private void BetweenRoundsQuickGame()
     {
-        int MAX_QUICKGAMES = 5;
+        int MAX_QUICKGAMES = 2;
         
-        int quickgameNumber = Random.Range(1, 0 + 1); // +1 Becaus the max is not inclusive
+        int quickgameNumber = Random.Range(1, MAX_QUICKGAMES + 1); // +1 Because the max is not inclusive
         
-        Debug.Log($"Minigame decided: {quickgameNumber}");
 
         _RoomManager.BroadcastToAll($"MINIGAMEID|{quickgameNumber}");
         MiniGamesManager.Instance.StartMiniGame(quickgameNumber, _playerOrder);
@@ -295,26 +310,31 @@ public class GameManager : MonoBehaviour
         StartPlayerTurn();
     }
 
-    public void ShowWellDecisionPanel(System.Action<bool> onDecision)
+    public void ShowWellDecisionPanel()
     {
+        _waitingWellDecision = true;
         wellDecisionPanel.SetActive(true);
-        _wellDecisionCallback = onDecision;
+        // Envía mensaje al cliente web del jugador actual para mostrar la UI de votación
+        string currentPlayerName = GetCurrentPlayer();
+        if (!string.IsNullOrEmpty(currentPlayerName))
+        {
+            _RoomManager.SendToClient(currentPlayerName, "SHOW_WELL_UI");
+        }
     }
 
-    public void HideWellDecisionPanel()
+    public void HandleWellDecision(string playerName, bool deposit)
     {
-        wellDecisionPanel.SetActive(false);
-        _wellDecisionCallback = null;
+        if (_playersDictionary.TryGetValue(playerName, out GameObject player)){
+            Character character = player.GetComponent<Character>();
+            if(deposit){
+                if (character != null)
+                {
+                    character.DepositResources();
+                }
+            }            
+            _waitingWellDecision = false;
+            wellDecisionPanel.SetActive(false);
+            character.SetWaitingForWellDecision(false);
+        }
     }
-
-    // Callback para guardar la acción a ejecutar tras la decisión
-    private System.Action<bool> _wellDecisionCallback;
-
-    // Llama esto desde los botones del panel
-    public void OnWellDecisionButton(bool deposit)
-    {
-        HideWellDecisionPanel();
-        _wellDecisionCallback?.Invoke(deposit);
-    }
-
 }

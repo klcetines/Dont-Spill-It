@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using System.Linq;
 
 [System.Serializable]
 public class QuestionsList
@@ -17,6 +18,12 @@ public class QuestionData
     public string text;
     public string optionA;
     public string optionB;
+}
+
+[System.Serializable]
+public class MatchAnswersQuestionsList
+{
+    public List<string> questions;
 }
 
 public class MiniGamesManager : MonoBehaviour
@@ -41,6 +48,18 @@ public class MiniGamesManager : MonoBehaviour
     [SerializeField] private Transform optionBContainer;
     private Dictionary<string, GameObject> voteCircles = new Dictionary<string, GameObject>();
 
+    [Header("Match Answers UI")]
+    [SerializeField] private GameObject matchAnswersPanel;
+    [SerializeField] private TMP_Text matchQuestionText;
+    [SerializeField] private TMP_Text[] answerTexts;
+
+    private List<string> matchQuestions = new List<string>();
+
+    private string selectedPlayer;
+    private string currentQuestion;
+    private Dictionary<string, string> minigame2Answers = new Dictionary<string, string>();
+    private Dictionary<string, int> minigame2Votes = new Dictionary<string, int>();
+    private List<string> answerOrder = new List<string>();
 
     [SerializeField] private float circleSpacing = 75f; // Espacio entre círculos
 
@@ -70,11 +89,33 @@ public class MiniGamesManager : MonoBehaviour
                 StartWouldYouRather();
                 break;
             case 2:
+                StartMatchAnswers(players);
                 break;
             // Agrega más casos para otros minijuegos
             default:
                 Debug.LogWarning("Minijuego no reconocido");
                 break;
+        }
+    }
+
+    private void LoadMatchAnswersQuestions()
+    {
+        TextAsset jsonFile = Resources.Load<TextAsset>("MatchAnswersQuestions");
+        if (jsonFile != null)
+        {
+            var questionsList = JsonUtility.FromJson<MatchAnswersQuestionsList>(jsonFile.text);
+            if (questionsList != null && questionsList.questions.Count > 0)
+            {
+                matchQuestions = questionsList.questions;
+            }
+            else
+            {
+                Debug.LogWarning("No se encontraron preguntas para Match Answers en el archivo JSON.");
+            }
+        }
+        else
+        {
+            Debug.LogError("No se pudo cargar el archivo JSON de preguntas para Match Answers.");
         }
     }
 
@@ -194,5 +235,131 @@ public class MiniGamesManager : MonoBehaviour
 
             circles[i].transform.localPosition = new Vector3(xOffset, yOffset, 0);
         }
+    }
+
+    public void StartMatchAnswers(List<string> players)
+    {
+        if (matchQuestions.Count == 0)
+            LoadMatchAnswersQuestions();
+
+        selectedPlayer = players[UnityEngine.Random.Range(0, players.Count)];
+        // Selecciona una pregunta aleatoria y reemplaza el marcador por el nombre del jugador
+        string rawQuestion = matchQuestions[UnityEngine.Random.Range(0, matchQuestions.Count)];
+        currentQuestion = rawQuestion.Replace("{player}", selectedPlayer);
+
+        minigame2Answers.Clear();
+        minigame2Votes.Clear();
+        answerOrder.Clear();
+
+        ShowMinigame2Question(currentQuestion, selectedPlayer);
+    }
+
+    // Llama esto cuando recibas una respuesta de un cliente web
+    public void HandleMatchAnswers(string playerName, string answer)
+    {
+        var parts = answer.Split('|');
+        if (parts.Length != 2) return;
+
+        string actualAnswer = parts[1];
+        minigame2Answers[playerName] = actualAnswer;
+
+        // Envía confirmación al cliente HTML
+        RoomManager.Instance.SendToClient(playerName, "MINIGAME2_ANSWER_RECEIVED");
+
+        // Espera a que todos respondan
+        if (minigame2Answers.Count == _currentPlayers.Count)
+        {
+            // Mezcla las respuestas y guarda el orden
+            answerOrder = minigame2Answers.Values.OrderBy(x => UnityEngine.Random.value).ToList();
+
+            // Muestra en Unity y envía a los clientes
+            ShowMinigame2Choices(answerOrder);
+            string[] letters = { "A", "B", "C", "D", "E", "F" };
+
+            string choicesMsg = "MINIGAME2_CHOICES|" + string.Join("|", answerOrder.Count);
+            foreach (var player in _currentPlayers)
+            {
+                if(player == selectedPlayer) continue;
+                RoomManager.Instance.SendToClient(player, choicesMsg);
+            }
+        }
+    }
+
+    // Llama esto cuando recibas un voto de un cliente web
+    public void HandleMinigame2Vote(string playerName, string message)
+    {
+        var parts = message.Split('|');
+        if (parts.Length != 2) return;
+        int answerIndex = parts[1].ToUpper()[0] - 'A'; // Convierte 'A'->0, 'B'->1, etc.
+        minigame2Votes[playerName] = answerIndex;
+
+        if (minigame2Votes.Count == _currentPlayers.Count - 1)
+        {
+            ShowMinigame2Results();
+        }
+    }
+
+    private void ShowMinigame2Question(string question, string player)
+    {
+        if (matchAnswersPanel != null)
+            matchAnswersPanel.SetActive(true);
+        if (matchQuestionText != null)
+            matchQuestionText.text = question;
+    }
+    
+    // UI: Muestra todas las respuestas recibidas para votar
+    private void ShowMinigame2Choices(List<string> choices)
+    {
+        string[] letters = { "A", "B", "C", "D", "E", "F" };
+        for (int i = 0; i < answerTexts.Length; i++)
+        {
+            if (i < choices.Count)
+            {
+                answerTexts[i].gameObject.SetActive(true);
+                answerTexts[i].text = $"{letters[i]}. {choices[i]}";
+            }
+            else
+            {
+                answerTexts[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+     // UI: Muestra los resultados (puedes personalizar según tu lógica)
+    private void ShowMinigame2Results()
+    {
+        // Ejemplo: muestra qué respuesta era la real y quién acertó
+        int realIndex = answerOrder.FindIndex(ans => minigame2Answers[selectedPlayer] == ans);
+        string realAnswer = minigame2Answers[selectedPlayer];
+
+        string results = $"La respuesta real de {selectedPlayer} era:\n<b>{realAnswer}</b>\n\n";
+        int aciertos = 0;
+        foreach (var vote in minigame2Votes)
+        {
+            string player = vote.Key;
+            int votedIndex = vote.Value;
+            if (votedIndex == realIndex)
+            {
+                results += $"{player} acertó!\n";
+                aciertos++;
+            }
+            else
+            {
+                results += $"{player} falló.\n";
+            }
+        }
+        results += $"\nAciertos: {aciertos}/{minigame2Votes.Count}";
+        if (matchQuestionText != null)
+            matchQuestionText.text = results;
+
+        // Oculta el panel tras unos segundos o cuando pulses un botón
+        StartCoroutine(HideMatchAnswersPanelAfterDelay(4f));
+    }
+
+    private IEnumerator HideMatchAnswersPanelAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (matchAnswersPanel != null)
+            matchAnswersPanel.SetActive(false);
     }
 }

@@ -42,16 +42,6 @@ public class WebSocketManager : MonoBehaviour
                     CreateClientConnection(playerName);
                 });
             }
-            // Manejar mensajes de jugadores
-            else if (data.Length > 1)
-            {
-                string playerName = data[0];
-                string message = data[1];
-                
-                MainThreadDispatcher.ExecuteOnMainThread(() => {
-                    ProcessClientMessage(playerName, message);
-                });
-            }
         };
         
         _mainSocket.OnError += (sender, e) => {
@@ -77,20 +67,6 @@ public class WebSocketManager : MonoBehaviour
             RoomManager.Instance.RegisterPlayer(playerName, client);
             
             Debug.Log($"Nuevo cliente creado para {playerName}");
-        }
-    }
-
-    private void ProcessClientMessage(string playerName, string message)
-    {
-        Debug.Log($"Procesando mensaje de {playerName}: {message}");
-        
-        if (_connectedClients.TryGetValue(playerName, out WebSocketClient client))
-        {
-            // Ejemplo: manejar acción "THROW"
-            if (message == "THROW")
-            {
-                GameManager.Instance.HandlePlayerAction(playerName, "throw");
-            }
         }
     }
 
