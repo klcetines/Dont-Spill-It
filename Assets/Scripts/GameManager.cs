@@ -34,6 +34,9 @@ public class GameManager : MonoBehaviour
     private bool _isMiniGameActive = false;
     private bool _waitingWellDecision = false;
 
+    private int _roundCount = 0;
+    private const int MAX_ROUNDS = 10;
+
     public static GameManager Instance { get; private set; }
 
     void Awake()
@@ -229,10 +232,17 @@ public class GameManager : MonoBehaviour
     {
         if (_currentPlayerIndex == (_playerOrder.Count - 1))
         {
+            _roundCount++;
+            if (_roundCount >= MAX_ROUNDS)
+            {
+                EndGame();
+                return;
+            }
             _isMiniGameActive = true;
             BetweenRoundsQuickGame();
         }
-        else{
+        else
+        {
             _currentPlayerIndex = (_currentPlayerIndex + 1) % _playerOrder.Count;
             StartPlayerTurn();
         }
@@ -337,4 +347,31 @@ public class GameManager : MonoBehaviour
             character.SetWaitingForWellDecision(false);
         }
     }
+
+    private void EndGame()
+{
+    Debug.Log("¡La partida ha terminado!");
+
+    string winner = null;
+    float maxTotal = float.MinValue;
+
+    foreach (var kvp in _playersDictionary)
+    {
+        var character = kvp.Value.GetComponent<Character>();
+        if (character != null)
+        {
+            float total = character.GetLiquidOnWell() + character.GetLiquid();
+            Debug.Log($"{kvp.Key}: Líquido total = {total}");
+            if (total > maxTotal)
+            {
+                maxTotal = total;
+                winner = kvp.Key;
+            }
+        }
+    }
+
+    Debug.Log($"¡El ganador es {winner} con {maxTotal} de líquido!");
+    // Aquí puedes mostrar un panel de victoria, enviar mensaje a los clientes, etc.
+    _isGameActive = false;
+}
 }
