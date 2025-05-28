@@ -349,29 +349,30 @@ public class GameManager : MonoBehaviour
     }
 
     private void EndGame()
-{
-    Debug.Log("¡La partida ha terminado!");
-
-    string winner = null;
-    float maxTotal = float.MinValue;
-
-    foreach (var kvp in _playersDictionary)
     {
-        var character = kvp.Value.GetComponent<Character>();
-        if (character != null)
+        Debug.Log("¡La partida ha terminado!");
+
+        string winner = null;
+        float maxTotal = float.MinValue;
+
+        foreach (var kvp in _playersDictionary)
         {
-            float total = character.GetLiquidOnWell() + character.GetLiquid();
-            Debug.Log($"{kvp.Key}: Líquido total = {total}");
-            if (total > maxTotal)
+            var character = kvp.Value.GetComponent<Character>();
+            if (character != null)
             {
-                maxTotal = total;
-                winner = kvp.Key;
+                float total = character.GetLiquidOnWell() + character.GetLiquid();
+                Debug.Log($"{kvp.Key}: Líquido total = {total}");
+                if (total > maxTotal)
+                {
+                    maxTotal = total;
+                    winner = kvp.Key;
+                }
             }
         }
-    }
 
-    Debug.Log($"¡El ganador es {winner} con {maxTotal} de líquido!");
-    // Aquí puedes mostrar un panel de victoria, enviar mensaje a los clientes, etc.
-    _isGameActive = false;
-}
+        Debug.Log($"¡El ganador es {winner} con {maxTotal} de líquido!");
+        // Aquí puedes mostrar un panel de victoria, enviar mensaje a los clientes, etc.
+        _isGameActive = false;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(0);
+    }
 }
