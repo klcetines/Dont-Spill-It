@@ -26,15 +26,21 @@ public class WebSocketManager : MonoBehaviour
 
     private void InitializeMainConnection()
     {
-        RoomCode = Random.Range(1000, 9999).ToString();
-        _mainSocket = new WebSocket($"ws://192.168.0.19:8080/host/{RoomCode}");
-        
+        _mainSocket = new WebSocket("ws://192.168.0.19:8080/host");
+          
         _mainSocket.OnMessage += (sender, e) => {
             Debug.Log($"Mensaje recibido en Unity: {e.Data}");
             
             var data = e.Data.Split('|');
             
-            // Manejar nuevo jugador
+            if (data[0] == "ROOM_CODE")
+            {
+                RoomCode = data[1];
+                MainThreadDispatcher.ExecuteOnMainThread(() => {
+                    StartCoroutine(WaitForRoomManagerAndSetCode(RoomCode));
+                });
+            }
+
             if (data[0] == "NEW_PLAYER")
             {
                 string playerName = data[1];
@@ -53,6 +59,18 @@ public class WebSocketManager : MonoBehaviour
         };
         
         _mainSocket.Connect();
+    }
+
+    private System.Collections.IEnumerator WaitForRoomManagerAndSetCode(string code)
+    {
+        RoomManager roomManager = null;
+        while (roomManager == null)
+        {
+            roomManager = FindObjectOfType<RoomManager>();
+            if (roomManager == null)
+                yield return null; // Espera un frame
+        }
+        roomManager.SetRoomCode(code);
     }
 
     private void CreateClientConnection(string playerName)

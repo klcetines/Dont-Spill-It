@@ -3,13 +3,22 @@ const wss = new WebSocket.Server({ port: 8080 });
 
 const rooms = new Map();
 
+function generateRoomCode() {
+    let code;
+    do {
+        code = Math.floor(1000 + Math.random() * 9000).toString();
+    } while (rooms.has(code));
+    return code;
+}
+
 wss.on('connection', (ws, req) => {
     const path = req.url.split('/').filter(Boolean);
 
     // --- HOST UNITY ---
     if (path[0] === 'host') {
-        const roomCode = path[1];
+        const roomCode = generateRoomCode();
         rooms.set(roomCode, { host: ws, clients: new Map(), clientsUnity: new Map() });
+        ws.send(`ROOM_CODE|${roomCode}`); // Envía el código a Unity
         console.log(`Sala ${roomCode} creada por host`);
     }
 

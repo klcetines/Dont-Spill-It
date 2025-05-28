@@ -34,7 +34,6 @@ public class RoomManager : MonoBehaviour
             if(WSManager == null){
                 Debug.LogError("WebSocketManager not found from RoomManager");
             }
-            GetRoomCode(WSManager);
         }
         else
         {
@@ -42,11 +41,9 @@ public class RoomManager : MonoBehaviour
         }
     }
 
-    public void GetRoomCode(WebSocketManager WSManager)
+    public void SetRoomCode(string currentRoomCode)
     {
-        string currentRoomCode = WSManager.RoomCode;
         roomCodeText.text = currentRoomCode;
-        Debug.Log($"Código de sala generado: {currentRoomCode}");
     }
 
     public bool RegisterPlayer(string playerName, WebSocketClient client)

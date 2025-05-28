@@ -71,7 +71,6 @@ public class Character : MonoBehaviour
             var targetNode = GetTargetNode(nodes, currentNode, nDice, ref path);
             
             StartCoroutine(MoveThroughPath(path, () => {
-                Debug.Log("Moving");
                 currentNode = targetNode;
                 onComplete?.Invoke();
             }));
