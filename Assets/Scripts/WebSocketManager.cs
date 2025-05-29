@@ -27,7 +27,7 @@ public class WebSocketManager : MonoBehaviour
 
     private void InitializeMainConnection()
     {
-        _mainSocket = new WebSocket("ws://192.168.0.19:8080/host");
+        _mainSocket = new WebSocket("ws://PosarAquiLaIP:DespresDelsPuntsElPort/host");
           
         _mainSocket.OnMessage += (sender, e) => {
             Debug.Log($"Mensaje recibido en Unity: {e.Data}");
