@@ -237,4 +237,14 @@ public class Character : MonoBehaviour
         waitingForWellDecision = value;
     }
 
+    public float GetLiquidOnWell()
+    {
+        return _liquidOnWell;
+    }
+
+    public float GetLiquid()
+    {
+        return _liquid;
+    }
+
 }

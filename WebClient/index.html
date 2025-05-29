@@ -125,64 +125,70 @@
                 ws.onmessage = (e) => {
                     const msg = e.data;
                     console.log(`Mensaje recibido: ${msg}`);
+                    if (msg.startsWith('MSGID|')) {
+                        const parts = msg.split('|');
+                        const messageId = parts[1];
+                        const actualMessage = parts.slice(2).join('|');
                     
-                    if (msg === "PING") {
-                        console.log("Recibido PING del servidor, respondiendo con PONG");
-                        ws.send("PONG");
-                    }
+                        if (actualMessage === "PING") {
+                            console.log("Recibido PING del servidor, respondiendo con PONG");
+                            ws.send("PONG");
+                        }
 
-                    if (msg === 'JOIN_SUCCESS') {
-                        currentRoom = code;
-                        document.getElementById('join').style.display = 'none';
-                        document.getElementById('characterSelect').style.display = 'block';
-                        document.getElementById('currentRoom').textContent = currentRoom;
-                        document.getElementById('game').style.display = 'block';
-                        document.getElementById('currentRoom').textContent = currentRoom;
-                    }
-                    else if (msg.startsWith('YOURTURN|')) {
-                        const time = msg.split('|')[1];
-                        showDiceInterface();
-                    }
-                    else if (msg.startsWith('DICETHROWN')){
-                        const value = msg.split('|')[1];
-                        showDiceResult(value);
-                    }
-                    else if(msg.startsWith('MINIGAMEID')) {
-                        console.log('Iniciando minijuego...');
-                        const gameID = msg.split('|')[1];
-                        showGameInterface(gameID);
-                    }
-                    else if (msg.startsWith('RECIEVED_VOTE')) {
-                        const vote = msg.split('|')[1];
-                        document.getElementById('gameStatus').textContent = `Has votado por: ${vote}`;
-                        hideVotingInterface();
-                    }
-                    else if (msg === 'MINIGAME2_ANSWER_RECEIVED') {
-                        document.getElementById('minigame2').style.display = 'none';
-                        document.getElementById('minigame2-status').textContent = '';
-                    }
-                    else if(msg.startsWith('MINIGAME2_CHOICES')){
-                        const number = msg.split('|')[1];
-                        showMinigame2Voting(number);
-                    }
-                    else if (msg.startsWith('VOTE_RESULT')) {
-                        const result = msg.split('|')[1];
-                        document.getElementById('gameStatus').textContent = `Resultado de la votación: ${result}`;
-                    }
-                    else if (msg === 'CHARACTER_CONFIRM') {
-                        // Una vez confirmado el personaje, mostrar el juego
-                        document.getElementById('characterSelect').style.display = 'none';
-                        document.getElementById('game').style.display = 'block';
-                    }
-                    else if(msg === 'SHOW_WELL_UI'){
-                        showWellUI();
-                    }
-                    else if(msg.startsWith('WELLDECISION')){
-                        document.getElementById('wellUI').style.display = 'none';
-                        document.getElementById('gameStatus').textContent = 'Decisión tomada';
-                    }
-                    else {
-                        console.log('Mensaje no reconocido:', msg);
+                        if (actualMessage === 'JOIN_SUCCESS') {
+                            currentRoom = code;
+                            document.getElementById('join').style.display = 'none';
+                            document.getElementById('characterSelect').style.display = 'block';
+                            document.getElementById('currentRoom').textContent = currentRoom;
+                            document.getElementById('game').style.display = 'block';
+                            document.getElementById('currentRoom').textContent = currentRoom;
+                        }
+                        else if (actualMessage.startsWith('YOURTURN|')) {
+                            const time = actualMessage.split('|')[1];
+                            showDiceInterface();
+                        }
+                        else if (actualMessage.startsWith('DICETHROWN')){
+                            const value = actualMessage.split('|')[1];
+                            showDiceResult(value);
+                        }
+                        else if(actualMessage.startsWith('MINIGAMEID')) {
+                            console.log('Iniciando minijuego...');
+                            const gameID = actualMessage.split('|')[1];
+                            showGameInterface(gameID);
+                        }
+                        else if (actualMessage.startsWith('RECIEVED_VOTE')) {
+                            const vote = actualMessage.split('|')[1];
+                            document.getElementById('gameStatus').textContent = `Has votado por: ${vote}`;
+                            hideVotingInterface();
+                        }
+                        else if (actualMessage === 'MINIGAME2_ANSWER_RECEIVED') {
+                            document.getElementById('minigame2').style.display = 'none';
+                            document.getElementById('minigame2-status').textContent = '';
+                        }
+                        else if(actualMessage.startsWith('MINIGAME2_CHOICES')){
+                            const number = actualMessage.split('|')[1];
+                            showMinigame2Voting(number);
+                        }
+                        else if (actualMessage.startsWith('VOTE_RESULT')) {
+                            const result = actualMessage.split('|')[1];
+                            document.getElementById('gameStatus').textContent = `Resultado de la votación: ${result}`;
+                        }
+                        else if (actualMessage === 'CHARACTER_CONFIRM') {
+                            // Una vez confirmado el personaje, mostrar el juego
+                            document.getElementById('characterSelect').style.display = 'none';
+                            document.getElementById('game').style.display = 'block';
+                        }
+                        else if(actualMessage === 'SHOW_WELL_UI'){
+                            showWellUI();
+                        }
+                        else if(actualMessage.startsWith('WELLDECISION')){
+                            document.getElementById('wellUI').style.display = 'none';
+                            document.getElementById('gameStatus').textContent = 'Decisión tomada';
+                        }
+                        else {
+                            console.log('Mensaje no reconocido:', actualMessage);
+                        }
+                        ws.send(`CONFIRM|${messageId}`);
                     }
                 };
                 

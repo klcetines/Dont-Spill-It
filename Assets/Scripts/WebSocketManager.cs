@@ -1,4 +1,5 @@
 using WebSocketSharp;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,8 +41,7 @@ public class WebSocketManager : MonoBehaviour
                     StartCoroutine(WaitForRoomManagerAndSetCode(RoomCode));
                 });
             }
-
-            if (data[0] == "NEW_PLAYER")
+            else if (data[0] == "NEW_PLAYER")
             {
                 string playerName = data[1];
                 MainThreadDispatcher.ExecuteOnMainThread(() => {
@@ -92,7 +92,8 @@ public class WebSocketManager : MonoBehaviour
     {
         if (_connectedClients.TryGetValue(playerName, out WebSocketClient client))
         {
-            client.Send(message);
+            string messageId = Guid.NewGuid().ToString("N").Substring(0, 8);
+            client.SendWithConfirmation(message, messageId);
         }
     }
 

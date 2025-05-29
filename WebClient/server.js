@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 
 const rooms = new Map();
+const pendingMessages = new Map();
 
 function generateRoomCode() {
     let code;
@@ -36,7 +37,7 @@ wss.on('connection', (ws, req) => {
         const room = rooms.get(roomCode);
         room.clients.set(playerName, ws);
         console.log(`Cliente HTML ${playerName} registrado en la sala ${roomCode}`);
-        ws.send("JOIN_SUCCESS");
+        sendWithRetry(room, playerName, "JOIN_SUCCESS");
 
         // Notificar al host sobre nuevo jugador
         if (room.host && room.host.readyState === WebSocket.OPEN) {
@@ -46,6 +47,12 @@ wss.on('connection', (ws, req) => {
         ws.on('message', (message) => {
             const messageStr = message.toString();
             console.log(`[client] Mensaje de ${playerName}: ${messageStr}`);
+            if (messageStr.startsWith('CONFIRM|')) {
+                const messageId = messageStr.split('|')[1];
+                pendingMessages.delete(messageId);
+                sendToUnity(room, playerName, `CONFIRM|${messageId}`);
+                return;
+            }
 
             if (messageStr === "PONG") {
                 console.log(`Recibido PONG de ${playerName}`);
@@ -103,29 +110,34 @@ wss.on('connection', (ws, req) => {
         room.clientsUnity.set(playerName, ws);
 
         console.log(`Cliente Unity ${playerName} registrado en la sala ${roomCode}`);
-        ws.send("JOIN_SUCCESS");
+        sendWithRetry(room, playerName, "JOIN_SUCCESS");
 
         ws.on('message', (message) => {
             const messageStr = message.toString();
             console.log(`[client-unity] Mensaje de ${playerName}: ${messageStr}`);
-
-            try {
-                const splittedMsg = messageStr.split('|');
-                if (splittedMsg[0] === 'TO_CLIENT') {
-                    // Mensaje de Unity para HTML
-                    const targetPlayer = splittedMsg[1];
-                    const clientMessage = splittedMsg.slice(2).join('|');
-                    sendToClient(room, targetPlayer, clientMessage);
-                } else if (splittedMsg[0] === 'TO_HOST') {
-                    // Mensaje de Unity para el host (poco común, pero posible)
-                    if (room.host && room.host.readyState === WebSocket.OPEN) {
-                        room.host.send(messageStr);
-                    }
-                } else {
-                    console.log('Mensaje no reconocido:', messageStr);
+            
+            // Si el mensaje incluye ID, primero confirmamos la recepción
+            if (messageStr.includes('|ID:')) {
+                const [actualMessage, messageId] = messageStr.split('|ID:');
+                // Confirmar recepción a Unity
+                ws.send(`CONFIRM|${messageId}`);
+                
+                // Procesar el mensaje
+                const splittedMsg = actualMessage.split('|');
+                try {
+                    const targetPlayer = splittedMsg[0];
+                    const clientMessage = splittedMsg.slice(1).join('|');
+                    // Enviar al cliente HTML con nuevo ID para tracking
+                    sendWithRetry(room, targetPlayer, clientMessage);
+                } catch (e) {
+                    console.error('Error procesando mensaje:', e);
                 }
-            } catch (e) {
-                console.error('Error procesando mensaje:', e);
+            }
+            // Si es una confirmación
+            else if (messageStr.startsWith('CONFIRM|')) {
+                const messageId = messageStr.split('|')[1];
+                pendingMessages.delete(messageId);
+                return;
             }
         });
 
@@ -137,21 +149,52 @@ wss.on('connection', (ws, req) => {
 });
 
 // --- ENVÍO DE MENSAJES A CLIENTE HTML ---
-function sendToClient(room, playerName, message) {
+function sendToClient(room, playerName, message, messageId = null) {
     const client = room.clients.get(playerName);
     if (client && client.readyState === WebSocket.OPEN) {
-        client.send(message);
-    } else {
+        const msgToSend = messageId ? `MSGID|${messageId}|${message}` : message;
+        client.send(msgToSend);
+        return true;
+    } 
+    else {
         console.log(`No se pudo enviar el mensaje a ${playerName}`);
+        return false;
     }
 }
 
-function sendToUnity(room, playerName, message) {
+function sendToUnity(room, playerName, message, messageId = null) {
     const unityClient = room.clientsUnity.get(playerName);
     if (unityClient && unityClient.readyState === WebSocket.OPEN) {
-        unityClient.send(message);
+        const msgToSend = messageId ? `MSGID|${messageId}|${message}` : message;
+        unityClient.send(msgToSend);
+        return true;
     } else {
         console.log(`No se pudo enviar el mensaje a ${playerName}`);
+        return false;
+    }
+}
+
+//Funciones para confirmar los mensajes
+function sendWithRetry(room, playerName, message, retries = 3) {
+    const messageId = Math.random().toString(36).substr(2, 9);
+    if (sendToClient(room, playerName, message, messageId)) {
+        pendingMessages.set(messageId, { room, playerName, message, retries });
+        setTimeout(() => checkConfirmation(messageId), 2000); // 2 segundos de espera
+    }
+}
+
+function checkConfirmation(messageId) {
+    const pending = pendingMessages.get(messageId);
+    if (pending) {
+        if (pending.retries > 0) {
+            console.log(`Reintentando mensaje a ${pending.playerName}, intentos restantes: ${pending.retries}`);
+            sendToClient(pending.room, pending.playerName, pending.message, messageId);
+            pending.retries--;
+            setTimeout(() => checkConfirmation(messageId), 2000);
+        } else {
+            console.log(`No se pudo entregar el mensaje a ${pending.playerName} tras varios intentos.`);
+            pendingMessages.delete(messageId);
+        }
     }
 }
 
