@@ -354,6 +354,19 @@ public class MiniGamesManager : MonoBehaviour
 
         // Oculta el panel tras unos segundos o cuando pulses un botón
         StartCoroutine(HideMatchAnswersPanelAfterDelay(4f));
+        List<string> teamA = new List<string>();
+        List<string> teamB = new List<string>();
+        int realIndex = answerOrder.FindIndex(ans => minigame2Answers[selectedPlayer] == ans);
+
+        foreach (var vote in minigame2Votes)
+        {
+            if (vote.Value == realIndex)
+            teamA.Add(vote.Key);
+            else
+            teamB.Add(vote.Key);
+        }
+
+        GameManager.Instance.OnMiniGameCompleted(teamA, teamB);
     }
 
     private IEnumerator HideMatchAnswersPanelAfterDelay(float delay)
