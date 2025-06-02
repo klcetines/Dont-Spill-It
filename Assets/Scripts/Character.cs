@@ -93,7 +93,8 @@ public class Character : MonoBehaviour
             {
                 transform.position = Vector3.MoveTowards(transform.position, _targetPosition, moveSpeed * Time.deltaTime);
                 if (Vector3.Distance(transform.position, _targetPosition) < 0.1f)
-                {
+                {   
+                    _animator.SetTrigger(STILL_TRIGGER);
                     _isMoving = false;
                 }
                 yield return null;
@@ -112,6 +113,12 @@ public class Character : MonoBehaviour
             }
         }
         AudioManager.Instance?.StopWalkLoop();
+        if (_animator != null)
+        {
+            _animator.SetFloat(X_SPEED, 0f);
+            _animator.SetFloat(Y_SPEED, 0f);
+            _animator.SetTrigger(STILL_TRIGGER);
+        }
         onComplete?.Invoke();
     }
 

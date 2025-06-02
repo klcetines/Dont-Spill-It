@@ -356,7 +356,7 @@ public class MiniGamesManager : MonoBehaviour
         StartCoroutine(HideMatchAnswersPanelAfterDelay(4f));
         List<string> teamA = new List<string>();
         List<string> teamB = new List<string>();
-        int realIndex = answerOrder.FindIndex(ans => minigame2Answers[selectedPlayer] == ans);
+        teamA.Add(selectedPlayer);
 
         foreach (var vote in minigame2Votes)
         {
@@ -373,6 +373,25 @@ public class MiniGamesManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         if (matchAnswersPanel != null)
+        {
+            // Limpia las respuestas
+            foreach (var answerText in answerTexts)
+            {
+                answerText.text = "Answer";
+                answerText.gameObject.SetActive(false);
+            }
+
+            // Limpia el texto de la pregunta
+            if (matchQuestionText != null)
+                matchQuestionText.text = "";
+
+            // Limpia las colecciones
+            minigame2Answers.Clear();
+            minigame2Votes.Clear();
+            answerOrder.Clear();
+
+            // Oculta el panel
             matchAnswersPanel.SetActive(false);
+        }
     }
 }

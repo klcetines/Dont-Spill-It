@@ -25,15 +25,34 @@ public class PlayerHUDManager : MonoBehaviour
     {
         if (playerHUDs == null || playerHUDs.Count != playerOrder.Count)
         {
-            foreach (string playerName in playerOrder)
+            Debug.LogWarning($"HUD count mismatch. Expected: {playerOrder.Count}, Actual: {playerHUDs?.Count}");
+            return;
+        }
+
+        // Crear un nuevo diccionario con el orden actualizado
+        Dictionary<string, PlayerHUD> reorderedHUDs = new Dictionary<string, PlayerHUD>();
+        
+        // Reordenar los HUDs según el nuevo orden
+        for (int i = 0; i < playerOrder.Count; i++)
+        {
+            string playerName = playerOrder[i];
+            if (playerHUDs.TryGetValue(playerName, out PlayerHUD hud))
             {
-                if (!playerHUDs.ContainsKey(playerName))
-                {
-                    Debug.LogWarning($"Missing HUD for player {playerName}");
-                }
+                hud.transform.SetSiblingIndex(i);
+                reorderedHUDs.Add(playerName, hud);
+            }
+            else
+            {
+                Debug.LogError($"Missing HUD for player {playerName}");
+                return;
             }
         }
 
+        // Actualizar el diccionario con el nuevo orden
+        playerHUDs = reorderedHUDs;
+        
+        // Resetear el índice activo y actualizar el layout
+        currentActivePlayerIndex = 0;
         UpdateHUDLayout();
     }
 
@@ -128,22 +147,20 @@ public class PlayerHUDManager : MonoBehaviour
 
     private void UpdateHUDLayout()
     {
-        EnsureLayoutGroupInitialized();
-
-        // Disable layout group temporarily
         layoutGroup.enabled = false;
 
-        // Get the active player name using the index
-        string activeName = playerHUDs.Keys.ElementAt(currentActivePlayerIndex);
-        if (playerHUDs.TryGetValue(activeName, out PlayerHUD activeHUD))
+        // Ahora usamos el diccionario reordenado para actualizar las escalas
+        int index = 0;
+        foreach (var kvp in playerHUDs)
         {
-            activeHUD.transform.SetSiblingIndex(currentActivePlayerIndex);
+            var hud = kvp.Value;
+            hud.transform.localScale = index == currentActivePlayerIndex ? 
+                Vector3.one * activePlayerScale : 
+                Vector3.one * inactivePlayerScale;
+            index++;
         }
 
-        // Re-enable layout group
         layoutGroup.enabled = true;
-
-        // Force layout update
         LayoutRebuilder.ForceRebuildLayoutImmediate(layoutGroup.GetComponent<RectTransform>());
     }
 
