@@ -1,6 +1,6 @@
-# 🍻 Don’t Spill It! – A Party Game for Adults
+# 🍻 Don’t Spill It! – A Different Party Game 
 
-**Don’t Spill It** is a social party game designed for adult audiences, inspired by classics like *Mario Party* and *Jackbox*, but with a twist: risk, chaos, and drinking mechanics. It’s built in Unity and designed to be played from smartphones or external devices via a web interface.
+**Don’t Spill It** is a social party game designed for non-familiar audiences, inspired by classics like *Mario Party* and *Jackbox*, but with a twist: risk, chaos, and drinking mechanics. It’s built in Unity and designed to be played from smartphones or external devices via a web interface.
 
 ---
 
