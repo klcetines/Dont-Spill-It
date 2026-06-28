@@ -88,3 +88,8 @@ The connection URL is a placeholder in two files — replace it with your comput
 
 ## License
 <!-- TODO: add a LICENSE file (MIT is a common, permissive choice) and state it here. -->
+
+## Credits
+
+- Programming: Bernat Valero Fontana
+- Art: Aymara Elorriaga
